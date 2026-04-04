@@ -74,10 +74,89 @@ def header_bar(slide, title_text, bg_color=BLUE):
              font_size=28, bold=True, color=WHITE, align=PP_ALIGN.LEFT)
 
 
+def add_slide_01(prs):
+    """슬라이드 1: 표지"""
+    sl = blank_slide(prs)
+    # 전체 배경 파란색
+    add_rect(sl, Inches(0), Inches(0), W, H, BLUE)
+    # 중앙 흰색 패널
+    add_rect(sl, Inches(1.5), Inches(1.8), Inches(10.33), Inches(3.8), WHITE)
+    # 메인 제목
+    add_text(sl, "🚲 자전거 안전 교육",
+             Inches(1.8), Inches(2.0), Inches(9.8), Inches(1.4),
+             font_size=44, bold=True, color=BLUE, align=PP_ALIGN.CENTER)
+    # 부제목
+    add_text(sl, "초등학교 5학년",
+             Inches(1.8), Inches(3.5), Inches(9.8), Inches(0.6),
+             font_size=22, color=DARK, align=PP_ALIGN.CENTER)
+    # 날짜
+    add_text(sl, "도로교통공단 교육자료 기반",
+             Inches(1.8), Inches(4.1), Inches(9.8), Inches(0.5),
+             font_size=16, color=RGBColor(0x75, 0x75, 0x75), align=PP_ALIGN.CENTER)
+    # 하단 띠
+    add_rect(sl, Inches(0), Inches(6.8), W, Inches(0.7), GREEN)
+    add_text(sl, "안전한 자전거 생활을 위한 필수 교육",
+             Inches(0), Inches(6.82), W, Inches(0.55),
+             font_size=16, color=WHITE, align=PP_ALIGN.CENTER)
+
+
+def add_slide_02(prs):
+    """슬라이드 2: 오늘의 학습 목표"""
+    sl = blank_slide(prs)
+    header_bar(sl, "오늘의 학습 목표")
+    goals = [
+        ("①", "자전거 기본 안전 수칙을 이해한다."),
+        ("②", "주요 사고 유형과 원인을 파악한다."),
+        ("③", "사고를 예방하는 방법을 익힌다."),
+    ]
+    colors = [BLUE, GREEN, ORANGE]
+    for i, (num, text) in enumerate(goals):
+        y = Inches(1.6 + i * 1.7)
+        add_rect(sl, Inches(0.5), y, Inches(0.8), Inches(1.2), colors[i])
+        add_text(sl, num,
+                 Inches(0.5), y + Inches(0.25),
+                 Inches(0.8), Inches(0.7),
+                 font_size=28, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_rect(sl, Inches(1.5), y, Inches(11.0), Inches(1.2), LGRAY)
+        add_text(sl, text,
+                 Inches(1.7), y + Inches(0.2),
+                 Inches(10.6), Inches(0.85),
+                 font_size=22, color=DARK)
+
+
+def add_slide_03(prs):
+    """슬라이드 3: 자전거, 얼마나 위험할까? (통계)"""
+    sl = blank_slide(prs)
+    header_bar(sl, "자전거, 얼마나 위험할까?", bg_color=ORANGE)
+    # 통계 수치 카드 3개
+    stats = [
+        ("연간 사고 건수", "약 15,000건", BLUE),
+        ("사망·중상 비율", "전체의 30%", ORANGE),
+        ("미착용 헬멧\n사고 비율", "68%", GREEN),
+    ]
+    for i, (label, value, color) in enumerate(stats):
+        x = Inches(0.5 + i * 4.3)
+        add_rect(sl, x, Inches(1.5), Inches(3.8), Inches(2.5), color)
+        add_text(sl, value,
+                 x, Inches(1.7), Inches(3.8), Inches(1.2),
+                 font_size=36, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text(sl, label,
+                 x, Inches(2.9), Inches(3.8), Inches(0.8),
+                 font_size=16, color=WHITE, align=PP_ALIGN.CENTER)
+    add_text(sl, "※ 출처: 도로교통공단 교통사고분석시스템(TAAS) 2023",
+             Inches(0.5), Inches(4.3), Inches(12.3), Inches(0.4),
+             font_size=12, color=RGBColor(0x75, 0x75, 0x75))
+    add_text(sl, "자전거 사고는 생각보다 훨씬 많이 발생합니다.\n헬멧만 써도 부상을 크게 줄일 수 있어요!",
+             Inches(0.5), Inches(4.9), Inches(12.3), Inches(1.5),
+             font_size=20, bold=True, color=DARK, align=PP_ALIGN.CENTER)
+
+
 def build_ppt():
     """Generate the bicycle safety education presentation and save it."""
     prs = new_prs()
-    # 슬라이드 빌더 함수들이 여기에 추가됨
+    add_slide_01(prs)
+    add_slide_02(prs)
+    add_slide_03(prs)
     prs.save("자전거_안전_교육.pptx")
     print("저장 완료: 자전거_안전_교육.pptx")
 
