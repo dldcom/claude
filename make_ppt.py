@@ -2,7 +2,6 @@ from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
 
 # ─── 색상 상수 ───────────────────────────────────────────
 BLUE   = RGBColor(0x1E, 0x88, 0xE5)   # 주 색상
@@ -34,7 +33,6 @@ def blank_slide(prs):
 
 def add_rect(slide, x, y, w, h, fill_color, border_color=None):
     """채워진 직사각형 도형을 추가하고 반환한다."""
-    from pptx.util import Emu
     shape = slide.shapes.add_shape(
         1,  # MSO_SHAPE_TYPE.RECTANGLE
         x, y, w, h
@@ -53,8 +51,8 @@ def add_text(slide, text, x, y, w, h,
              font_size=18, bold=False, color=DARK,
              align=PP_ALIGN.LEFT, font=FONT_KR):
     """텍스트 박스를 추가하고 반환한다."""
-    txBox = slide.shapes.add_textbox(x, y, w, h)
-    tf = txBox.text_frame
+    tx_box = slide.shapes.add_textbox(x, y, w, h)
+    tf = tx_box.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     p.alignment = align
@@ -64,7 +62,7 @@ def add_text(slide, text, x, y, w, h,
     run.font.size = Pt(font_size)
     run.font.bold = bold
     run.font.color.rgb = color
-    return txBox
+    return tx_box
 
 
 def header_bar(slide, title_text, bg_color=BLUE):
@@ -77,6 +75,7 @@ def header_bar(slide, title_text, bg_color=BLUE):
 
 
 def build_ppt():
+    """Generate the bicycle safety education presentation and save it."""
     prs = new_prs()
     # 슬라이드 빌더 함수들이 여기에 추가됨
     prs.save("자전거_안전_교육.pptx")
