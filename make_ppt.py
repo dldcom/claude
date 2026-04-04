@@ -317,6 +317,145 @@ def add_slide_09(prs):
                  font_size=14, color=DARK)
 
 
+def add_slide_10(prs):
+    """슬라이드 10: 흔한 사고 유형 TOP 3"""
+    sl = blank_slide(prs)
+    header_bar(sl, "흔한 사고 유형 TOP 3", bg_color=ORANGE)
+    types = [
+        ("🚦\n1위", "교차로 사고", "전체의 42%", BLUE),
+        ("🚶\n2위", "보행자 충돌", "전체의 28%", GREEN),
+        ("⬇\n3위", "내리막 과속", "전체의 19%", ORANGE),
+    ]
+    for i, (icon, title, pct, color) in enumerate(types):
+        x = Inches(0.5 + i * 4.3)
+        add_rect(sl, x, Inches(1.4), Inches(3.8), Inches(4.8), color)
+        add_text(sl, icon,
+                 x, Inches(1.5), Inches(3.8), Inches(1.5),
+                 font_size=32, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text(sl, title,
+                 x, Inches(3.1), Inches(3.8), Inches(0.8),
+                 font_size=22, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text(sl, pct,
+                 x, Inches(3.9), Inches(3.8), Inches(0.7),
+                 font_size=18, color=WHITE, align=PP_ALIGN.CENTER)
+    add_text(sl, "※ 이 외에도 야간 주행, 음주 동승 등 다양한 사고 유형이 있습니다.",
+             Inches(0.5), Inches(6.6), Inches(12.3), Inches(0.5),
+             font_size=13, color=RGBColor(0x75, 0x75, 0x75))
+
+
+def _case_slide(prs, title, situation_lines, prevention_lines, color):
+    """사례 슬라이드 공통 레이아웃 헬퍼"""
+    sl = blank_slide(prs)
+    header_bar(sl, title, bg_color=color)
+    # 상황 박스
+    add_rect(sl, Inches(0.5), Inches(1.3), Inches(5.8), Inches(4.5), RGBColor(0xFF, 0xF8, 0xE1))
+    add_text(sl, "📋 상황",
+             Inches(0.7), Inches(1.4), Inches(5.4), Inches(0.55),
+             font_size=18, bold=True, color=ORANGE)
+    for j, line in enumerate(situation_lines):
+        add_text(sl, line,
+                 Inches(0.7), Inches(2.0 + j * 0.75), Inches(5.4), Inches(0.65),
+                 font_size=16, color=DARK)
+    # 예방법 박스
+    add_rect(sl, Inches(7.0), Inches(1.3), Inches(5.8), Inches(4.5), RGBColor(0xE8, 0xF5, 0xE9))
+    add_text(sl, "✅ 예방법",
+             Inches(7.2), Inches(1.4), Inches(5.4), Inches(0.55),
+             font_size=18, bold=True, color=GREEN)
+    for j, line in enumerate(prevention_lines):
+        add_text(sl, line,
+                 Inches(7.2), Inches(2.0 + j * 0.75), Inches(5.4), Inches(0.65),
+                 font_size=16, color=DARK)
+    return sl
+
+
+def add_slide_11(prs):
+    """슬라이드 11: 사례 1 교차로 사고"""
+    _case_slide(prs,
+        "사례 1: 교차로 사고",
+        [
+            "• 신호를 무시하고 빠르게 달리던",
+            "  중 교차로에서 차량과 충돌",
+            "• 헬멧 미착용으로 두부 손상",
+            "• 초등학생 A, 전치 6주 부상",
+        ],
+        [
+            "• 교차로에서 반드시 일시 정지",
+            "• 신호등 확인 후 서행 통과",
+            "• 차량 운전자와 눈 맞춤 후 진입",
+            "• 헬멧 항상 착용!",
+        ],
+        BLUE
+    )
+
+
+def add_slide_12(prs):
+    """슬라이드 12: 사례 2 보행자 충돌"""
+    _case_slide(prs,
+        "사례 2: 보행자 충돌",
+        [
+            "• 인도에서 고속 주행 중",
+            "  갑자기 나온 보행자와 충돌",
+            "• 보행자 노인 골절, 본인도 부상",
+            "• 인도 주행 자체가 불법",
+        ],
+        [
+            "• 인도(보도)에서 자전거 금지",
+            "• 자전거도로 또는 차도 우측 이용",
+            "• 사람이 많은 곳에서 내려서 끌기",
+            "• 벨을 눌러 존재 알리기",
+        ],
+        GREEN
+    )
+
+
+def add_slide_13(prs):
+    """슬라이드 13: 사례 3 내리막 과속"""
+    _case_slide(prs,
+        "사례 3: 내리막 과속",
+        [
+            "• 긴 내리막길에서 브레이크 없이",
+            "  질주하다 코너에서 이탈",
+            "• 가드레일 충돌, 팔 골절",
+            "• 속도가 붙으면 멈추기 어려움",
+        ],
+        [
+            "• 내리막에서는 미리 속도 줄이기",
+            "• 앞·뒤 브레이크 동시에 살살 사용",
+            "• 앞 브레이크만 갑자기 잡으면 위험",
+            "• 커브 전에 충분히 감속",
+        ],
+        ORANGE
+    )
+
+
+def add_slide_14(prs):
+    """슬라이드 14: 사고 발생 시 행동 요령"""
+    sl = blank_slide(prs)
+    header_bar(sl, "사고 발생 시 행동 요령", bg_color=RGBColor(0x7B, 0x1F, 0xA2))
+    steps = [
+        ("STOP", "즉시 멈추기", "사고 직후 현장을 떠나지 않는다\n2차 사고 방지를 위해 안전한 곳으로 이동"),
+        ("CHECK", "부상 확인", "나와 상대방의 부상 여부 확인\n절대 혼자 움직이지 않는다"),
+        ("CALL", "어른·119 신고", "부모님·선생님께 즉시 연락\n부상자 있으면 119에 신고"),
+        ("WAIT", "현장 대기", "경찰·구급대 도착 전까지 현장 대기\n목격자 연락처 확보"),
+    ]
+    colors = [ORANGE, BLUE, GREEN, RGBColor(0x7B, 0x1F, 0xA2)]
+    for i, (keyword, title, desc) in enumerate(steps):
+        x = Inches(0.5 + i * 3.2)
+        add_rect(sl, x, Inches(1.4), Inches(2.9), Inches(4.5), colors[i])
+        add_text(sl, keyword,
+                 x, Inches(1.5), Inches(2.9), Inches(1.1),
+                 font_size=28, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text(sl, title,
+                 x, Inches(2.7), Inches(2.9), Inches(0.65),
+                 font_size=17, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        add_text(sl, desc,
+                 x + Inches(0.1), Inches(3.4), Inches(2.7), Inches(1.8),
+                 font_size=13, color=WHITE, align=PP_ALIGN.CENTER)
+    add_text(sl, "👉 절대로 도망가면 안 됩니다! 어른께 알리는 것이 가장 중요해요.",
+             Inches(0.5), Inches(6.3), Inches(12.3), Inches(0.6),
+             font_size=16, bold=True, color=ORANGE, align=PP_ALIGN.CENTER)
+
+
 def build_ppt():
     """Generate the bicycle safety education presentation and save it."""
     prs = new_prs()
@@ -329,6 +468,11 @@ def build_ppt():
     add_slide_07(prs)
     add_slide_08(prs)
     add_slide_09(prs)
+    add_slide_10(prs)
+    add_slide_11(prs)
+    add_slide_12(prs)
+    add_slide_13(prs)
+    add_slide_14(prs)
     prs.save("자전거_안전_교육.pptx")
     print("저장 완료: 자전거_안전_교육.pptx")
 
