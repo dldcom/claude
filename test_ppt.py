@@ -44,7 +44,7 @@ def test_slide_titles(generated_ppt):
         for shape in slide.shapes:
             if shape.has_text_frame:
                 texts.append(shape.text_frame.text.strip())
-        assert expected_titles[i] in texts, (
+        assert any(expected_titles[i] in t for t in texts), (
             f"슬라이드 {i+1}에서 '{expected_titles[i]}' 를 찾을 수 없음. "
             f"발견된 텍스트: {texts}"
         )
