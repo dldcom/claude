@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# 입력 파일 (교과서 PDF - 저작권)
+input/
+
+# 임시 파일
+*.tmp
