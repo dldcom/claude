@@ -31,13 +31,9 @@ def extract_text(pdf_path: str) -> tuple[str, int, int]:
     for page in doc:
         text = page.get_text()
         all_text.append(text)
-        # 페이지 하단에 표시된 교과서 쪽수 추출 (보통 마지막 줄에 숫자)
-        lines = text.strip().split("\n")
-        for line in reversed(lines):
-            line = line.strip()
-            if line.isdigit():
-                page_numbers.append(int(line))
-                break
+        # 페이지 하단에 표시된 교과서 쪽수 추출
+        nums = _detect_page_numbers(page)
+        page_numbers.extend(nums)
 
     doc.close()
 
@@ -70,6 +66,9 @@ def extract_unit_name(pdf_path: str) -> str:
 def extract_text_by_page(pdf_path: str) -> tuple[str, dict[int, str]]:
     """PDF에서 페이지별 텍스트를 추출하고 교과서 쪽수 태그를 붙여 반환한다.
 
+    양면 펼침(한 PDF 페이지에 교과서 두 쪽이 있는 경우)은 텍스트 블록의
+    x좌표를 기준으로 왼쪽/오른쪽을 분리하여 각 쪽에 정확히 대응시킨다.
+
     Returns:
         tagged_text: "[N쪽]\n텍스트\n\n[M쪽]\n텍스트\n..." 형태의 문자열
         page_texts: {교과서쪽수: 텍스트} 딕셔너리 (검증용)
@@ -83,12 +82,17 @@ def extract_text_by_page(pdf_path: str) -> tuple[str, dict[int, str]]:
         if not text:
             continue
 
-        # 페이지 하단에서 교과서 쪽수 추출
-        page_num = _detect_page_number(page)
-        if page_num is None:
+        nums = _detect_page_numbers(page)
+        if not nums:
             continue
 
-        page_texts[page_num] = text
+        if len(nums) == 2:
+            # 양면 펼침: x좌표로 왼쪽/오른쪽 텍스트 분리
+            left_text, right_text = _split_spread_text(page)
+            page_texts[nums[0]] = left_text   # 작은 쪽수 = 왼쪽
+            page_texts[nums[1]] = right_text   # 큰 쪽수 = 오른쪽
+        else:
+            page_texts[nums[0]] = text
 
     doc.close()
 
@@ -119,11 +123,54 @@ def parse_subunit_filename(pdf_path: str) -> dict:
     }
 
 
-def _detect_page_number(page) -> int | None:
-    """페이지 하단에서 교과서 쪽수를 추출한다. 없으면 None."""
-    lines = page.get_text().strip().split("\n")
-    for line in reversed(lines):
-        line = line.strip()
-        if line.isdigit():
-            return int(line)
-    return None
+def _detect_page_numbers(page) -> list[int]:
+    """페이지 하단에서 교과서 쪽수를 추출한다.
+
+    양면 펼침(두 페이지가 한 PDF 페이지에 있는 경우)이면 두 개의
+    쪽수를 반환한다. 감지 못하면 빈 리스트를 반환한다.
+    """
+    page_height = page.rect.height
+    # 하단 15% 영역에서 숫자만으로 구성된 텍스트 블록을 찾는다
+    bottom_threshold = page_height * 0.85
+    nums = []
+    for block in page.get_text("blocks"):
+        x0, y0, x1, y1, text, *_ = block
+        if y0 < bottom_threshold:
+            continue
+        # 블록 전체가 숫자와 공백으로만 이뤄진 경우만 쪽수로 인정
+        tokens = text.strip().split()
+        if tokens and all(t.isdigit() for t in tokens):
+            for t in tokens:
+                nums.append(int(t))
+    # 중복 제거 후 오름차순 정렬, 연속된 두 쪽수만 양면 펼침으로 인정
+    nums = sorted(set(nums))
+    if len(nums) == 2 and nums[1] - nums[0] != 1:
+        # 연속되지 않는 두 숫자는 오감지 — 큰 쪽수만 사용
+        nums = [nums[1]]
+    return nums
+
+
+def _split_spread_text(page) -> tuple[str, str]:
+    """양면 펼침 PDF 페이지의 텍스트를 x좌표 기준으로 왼쪽/오른쪽으로 분리한다."""
+    mid_x = page.rect.width / 2
+    left_blocks = []
+    right_blocks = []
+
+    for block in page.get_text("blocks"):
+        x0, y0, x1, y1, text, *_ = block
+        text = text.strip()
+        if not text:
+            continue
+        center_x = (x0 + x1) / 2
+        if center_x < mid_x:
+            left_blocks.append((y0, x0, text))
+        else:
+            right_blocks.append((y0, x0, text))
+
+    # y좌표(위→아래), x좌표(왼→오른) 순서로 정렬
+    left_blocks.sort()
+    right_blocks.sort()
+
+    left_text = "\n".join(t for _, _, t in left_blocks)
+    right_text = "\n".join(t for _, _, t in right_blocks)
+    return left_text, right_text
