@@ -1,6 +1,7 @@
 __pycache__/
 .pytest_cache/
 .claude/
+!.claude/skills/
 pdfextractor/
 pdf_extractor/textbooks/*
 !pdf_extractor/textbooks/.gitkeep
