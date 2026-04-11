@@ -108,19 +108,37 @@ def extract_text_by_page(pdf_path: str) -> tuple[str, dict[int, str]]:
 def parse_subunit_filename(pdf_path: str) -> dict:
     """소단원 PDF 파일명에서 단원, 소단원, 이름을 추출한다.
 
-    예: 1단원_2소단원_우리_지역의_위치와_특성.pdf
-        → {"unit": 1, "subunit": 2, "subunit_name": "우리 지역의 위치와 특성"}
+    지원 형식:
+      1) N단원_M소단원_이름.pdf
+         예: 1단원_2소단원_우리_지역의_위치와_특성.pdf
+      2) <과목prefix>_<학년>-<학기>-<단원>_M소단원_이름.pdf
+         예: society_6-1-1_1소단원_평화_통일을_위한_노력.pdf
     """
     filename = Path(pdf_path).stem
+
+    # 형식 1: N단원_M소단원_이름
     match = re.search(r"(\d+)단원_(\d+)소단원_(.+)", filename)
-    if not match:
-        raise ValueError(f"파일명 형식이 올바르지 않습니다: {filename}\n"
-                         f"예상 형식: N단원_M소단원_이름.pdf")
-    return {
-        "unit": int(match.group(1)),
-        "subunit": int(match.group(2)),
-        "subunit_name": match.group(3).replace("_", " "),
-    }
+    if match:
+        return {
+            "unit": int(match.group(1)),
+            "subunit": int(match.group(2)),
+            "subunit_name": match.group(3).replace("_", " "),
+        }
+
+    # 형식 2: prefix_G-S-U_M소단원_이름
+    match = re.search(r"[A-Za-z]+_(\d+)-(\d+)-(\d+)_(\d+)소단원_(.+)", filename)
+    if match:
+        return {
+            "grade": int(match.group(1)),
+            "semester": int(match.group(2)),
+            "unit": int(match.group(3)),
+            "subunit": int(match.group(4)),
+            "subunit_name": match.group(5).replace("_", " "),
+        }
+
+    raise ValueError(f"파일명 형식이 올바르지 않습니다: {filename}\n"
+                     f"예상 형식: N단원_M소단원_이름.pdf 또는 "
+                     f"prefix_G-S-U_M소단원_이름.pdf")
 
 
 def _detect_page_numbers(page) -> list[int]:

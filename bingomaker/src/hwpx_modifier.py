@@ -58,8 +58,12 @@ def create_bingo_worksheet(
 
     grade = metadata["grade"]
     unit = metadata["unit"]
+    subunit = metadata.get("subunit")
     unit_name = metadata.get("unit_name", "")
-    full_unit_name = f"{unit}. {unit_name}"
+    if subunit is not None:
+        full_unit_name = f"{unit}-{subunit} {unit_name}"
+    else:
+        full_unit_name = f"{unit}. {unit_name}"
 
     # 1. 단원명 교체
     xml = xml.replace("3. 지구, 대륙 그리고 국가들", full_unit_name)
@@ -87,8 +91,12 @@ def create_bingo_worksheet(
     )
 
     # 5. 25개 문제 교체 + linesegarray를 빈 태그로 교체 (한글이 열 때 자동 재계산)
-    for old_q, new_q_data in zip(TEMPLATE_QUESTIONS, questions):
+    # Q1은 단락 스타일로 자동 번호 매김이 적용되어 있으므로 번호를 붙이지 않고,
+    # Q2~Q25는 본문에 "N. " 접두를 붙여 번호를 표시한다.
+    for i, (old_q, new_q_data) in enumerate(zip(TEMPLATE_QUESTIONS, questions)):
         new_q = new_q_data["question"]
+        if i >= 1:
+            new_q = f"{i + 1}. {new_q}"
 
         # 원본 문제의 linesegarray 찾아서 빈 태그로 교체
         idx = xml.find(old_q)

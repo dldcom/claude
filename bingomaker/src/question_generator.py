@@ -29,6 +29,8 @@ def validate_questions(
     2. 각 쪽수가 page_start~page_end 범위 내인지
     3. 쪽수가 오름차순인지
     4. 각 정답이 해당 쪽수 텍스트에 존재하는지
+    5. 25개 정답이 모두 서로 다른지 (중복 금지)
+    6. 같은 쪽 안에서 원문 등장 순서대로 정렬되어 있는지 (베스트 에포트)
     """
     errors = []
 
@@ -64,5 +66,60 @@ def validate_questions(
         text = page_texts.get(page_num, "")
         if answer not in text:
             errors.append(f"문제 {i+1}: 정답 '{answer}'이(가) {page_num}쪽 텍스트에 없습니다.")
+
+    # 5. 중복 정답 검증
+    seen_answers: dict[str, int] = {}
+    for i, q in enumerate(questions):
+        ans = q["answer"]
+        if ans in seen_answers:
+            errors.append(
+                f"문제 {i+1}: 정답 '{ans}'이(가) 문제 {seen_answers[ans]+1}과 중복입니다."
+            )
+        else:
+            seen_answers[ans] = i
+
+    # 6. 같은 쪽 내 원문 순서 검증 (베스트 에포트)
+    #    문제 문장에서 ( N쪽 )을 정답으로 되돌린 뒤, 앞뒤 공백을 제외한
+    #    연속 조각을 페이지 텍스트에서 찾아 위치를 얻는다. 찾지 못하면
+    #    해당 문제는 순서 검증에서 제외한다.
+    def _find_position(q: dict, page_num: int) -> int:
+        text = page_texts.get(page_num, "")
+        if not text:
+            return -1
+        restored = re.sub(r"\(\s*\d+쪽\s*\)", q["answer"], q["question"])
+        # 우선 전체 문장으로 시도
+        idx = text.find(restored)
+        if idx != -1:
+            return idx
+        # 실패 시 정답 앞뒤 15자씩으로 단축 탐색
+        m = re.search(re.escape(q["answer"]), restored)
+        if not m:
+            return -1
+        start = max(0, m.start() - 15)
+        end = min(len(restored), m.end() + 15)
+        snippet = restored[start:end]
+        return text.find(snippet)
+
+    positions_by_page: dict[int, list[tuple[int, int, int]]] = {}
+    for i, q in enumerate(questions):
+        if i >= len(page_nums) or page_nums[i] == 0:
+            continue
+        page_num = page_nums[i]
+        pos = _find_position(q, page_num)
+        positions_by_page.setdefault(page_num, []).append((i, pos, i))
+
+    for page_num, entries in positions_by_page.items():
+        # 위치를 못 찾은 항목은 순서 검증에서 제외
+        known = [(i, pos) for i, pos, _ in entries if pos >= 0]
+        if len(known) < 2:
+            continue
+        indices_order = [i for i, _ in known]
+        positions_order = [pos for _, pos in known]
+        if positions_order != sorted(positions_order):
+            errors.append(
+                f"{page_num}쪽 문제들이 원문 등장 순서와 다릅니다. "
+                f"문제 번호 순서: {[i+1 for i in indices_order]}, "
+                f"원문 위치: {positions_order}"
+            )
 
     return errors
