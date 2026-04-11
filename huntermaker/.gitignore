@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# 입력 파일 (교과서 PDF, 핵심개념 JSON - 저작권)
+input/*
+!input/.gitkeep
+
+# 생성된 출력 파일
+output/*
+!output/.gitkeep
+
+# 임시 파일
+*.tmp
