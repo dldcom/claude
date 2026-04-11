@@ -36,10 +36,22 @@ def validate_concepts(
                 continue
 
             answer = item["answer"]
-            if answer not in full_text:
+            # answer는 문자열 또는 문자열 리스트일 수 있다
+            answers = answer if isinstance(answer, list) else [answer]
+
+            # 빈칸 개수와 정답 개수가 일치하는지 확인
+            blank_count = item.get("question", "").count("(      )")
+            if blank_count != len(answers):
                 errors.append(
                     f"섹션 '{section_name}' 항목 {j+1}: "
-                    f"정답 '{answer}'이(가) 교과서 텍스트에 없습니다."
+                    f"빈칸 {blank_count}개, 정답 {len(answers)}개로 개수가 일치하지 않습니다."
                 )
+
+            for a in answers:
+                if a not in full_text:
+                    errors.append(
+                        f"섹션 '{section_name}' 항목 {j+1}: "
+                        f"정답 '{a}'이(가) 교과서 텍스트에 없습니다."
+                    )
 
     return errors
