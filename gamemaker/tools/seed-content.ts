@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -7,7 +6,19 @@ import pg from 'pg';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config({ path: join(__dirname, '../server/.env') });
+// .env is loaded via environment variable or dotenv in server context
+if (!process.env.DATABASE_URL) {
+  // Try to read server/.env manually
+  try {
+    const envFile = readFileSync(join(__dirname, '../server/.env'), 'utf-8');
+    for (const line of envFile.split('\n')) {
+      const [key, ...rest] = line.split('=');
+      if (key && rest.length) {
+        process.env[key.trim()] = rest.join('=').trim();
+      }
+    }
+  } catch { /* ignore if not found */ }
+}
 
 // ---- Type definitions ----
 
