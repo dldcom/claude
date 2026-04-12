@@ -5,11 +5,20 @@ import { DialogueBox } from '../ui/DialogueBox.js';
 import { QuizModal } from '../ui/QuizModal.js';
 import { HUD } from '../ui/HUD.js';
 import { api } from '../api/client.js';
-import { Student, NPC, Question, StudentProgress, RegionDetailResponse } from '../types/index.js';
+import { Student, NPC, Question, StudentProgress, RegionDetailResponse, StoryPhase } from '../types/index.js';
+import { CharacterSprite } from '../sprites/CharacterSprite.js';
 
 const PLAYER_SPEED = 200;
 const NPC_INTERACT_DIST = 50;
 const BONUS_COINS = 30;
+
+const NPC_PHASE_COLORS: Record<StoryPhase, number> = {
+  intro:      0x4a90d9,  // blue
+  develop:    0x6a5acd,  // purple
+  crisis:     0xd94a4a,  // red
+  climax:     0xd4a017,  // gold
+  conclusion: 0x2ecc71,  // green
+};
 
 interface NpcState {
   npc: NPC;
@@ -36,6 +45,7 @@ export class RegionScene extends Phaser.Scene {
   private student!: Student;
   private regionId!: number;
   private player!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  private characterSprite: CharacterSprite | null = null;
   private controls!: TouchControls;
   private dialogueBox!: DialogueBox;
   private quizModal!: QuizModal;
@@ -70,16 +80,36 @@ export class RegionScene extends Phaser.Scene {
     // Tile grid
     this.drawTileGrid();
 
-    // Player texture
-    const playerGfx = this.add.graphics();
-    playerGfx.fillStyle(0xff6b6b);
-    playerGfx.fillRect(0, 0, 24, 32);
-    playerGfx.generateTexture('player_region', 24, 32);
-    playerGfx.destroy();
+    // Player — try CharacterSprite first, fall back to rectangle
+    const avatarConfig = this.student.avatar_config;
+    let usedSprite = false;
+    if (avatarConfig) {
+      try {
+        this.characterSprite = new CharacterSprite(this, GAME_WIDTH / 2, GAME_HEIGHT - 80, avatarConfig);
+        if (this.characterSprite.getContainer().list.length > 0) {
+          this.characterSprite.setDepth(50);
+          usedSprite = true;
+        } else {
+          this.characterSprite.destroy();
+          this.characterSprite = null;
+        }
+      } catch {
+        this.characterSprite = null;
+      }
+    }
 
-    this.player = this.physics.add.image(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'player_region') as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    if (!usedSprite) {
+      const playerGfx = this.add.graphics();
+      playerGfx.fillStyle(0xff6b6b);
+      playerGfx.fillRect(0, 0, 24, 32);
+      playerGfx.generateTexture('player_region', 24, 32);
+      playerGfx.destroy();
+    }
+
+    this.player = this.physics.add.image(GAME_WIDTH / 2, GAME_HEIGHT - 80, usedSprite ? '__DEFAULT' : 'player_region') as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    if (usedSprite) this.player.setAlpha(0);
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(50);
+    this.player.setDepth(49);
 
     // UI components
     this.dialogueBox = new DialogueBox(this);
@@ -121,14 +151,7 @@ export class RegionScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0.5, 0).setDepth(10);
 
-    // NPC texture
-    const npcGfx = this.add.graphics();
-    npcGfx.fillStyle(0x6a5acd);
-    npcGfx.fillRect(0, 0, 28, 36);
-    npcGfx.generateTexture('npc_rect', 28, 36);
-    npcGfx.destroy();
-
-    // Build NPC states
+    // Build NPC states (no shared NPC texture — each gets phase-based color)
     for (const npc of npcs) {
       const cleared = progress.some(p => p.npc_id === npc.id && p.is_cleared);
       const question = questions.find(q => q.npc_id === npc.id) ?? null;
@@ -136,7 +159,8 @@ export class RegionScene extends Phaser.Scene {
       const nx = npc.position_x || (100 + (npcs.indexOf(npc) % 4) * 160);
       const ny = npc.position_y || (200 + Math.floor(npcs.indexOf(npc) / 4) * 140);
 
-      const sprite = this.add.rectangle(nx, ny, 28, 36, 0x6a5acd)
+      const npcColor = NPC_PHASE_COLORS[npc.story_phase] ?? 0x6a5acd;
+      const sprite = this.add.rectangle(nx, ny, 28, 36, npcColor)
         .setStrokeStyle(2, cleared ? 0x00ff00 : 0xffffff)
         .setDepth(20);
 
@@ -200,6 +224,7 @@ export class RegionScene extends Phaser.Scene {
     // Movement blocked during dialogue/quiz
     if (this.blocked || this.dialogueBox.isVisible() || this.quizModal.isVisible()) {
       this.player.setVelocity(0, 0);
+      this.characterSprite?.playIdle();
 
       // Advance dialogue with ENTER or A
       if (this.dialogueBox.isVisible()) {
@@ -224,6 +249,17 @@ export class RegionScene extends Phaser.Scene {
     else if (this.cursors.down.isDown || touch.down) vy = PLAYER_SPEED;
 
     this.player.setVelocity(vx, vy);
+
+    // Sync CharacterSprite position and animation
+    if (this.characterSprite) {
+      this.characterSprite.setPosition(this.player.x, this.player.y);
+      if (vx !== 0 || vy !== 0) {
+        const dir = vx < 0 ? 'left' : vx > 0 ? 'right' : vy < 0 ? 'up' : 'down';
+        this.characterSprite.walk(dir);
+      } else {
+        this.characterSprite.playIdle();
+      }
+    }
 
     // A / ENTER interaction
     const aPressed = this.controls.isAJustPressed();
@@ -389,6 +425,8 @@ export class RegionScene extends Phaser.Scene {
     this.hud.destroy();
     this.dialogueBox.destroy();
     this.quizModal.destroy();
+    this.characterSprite?.destroy();
+    this.characterSprite = null;
     this.scene.start('Hub', { student: { ...this.student, coins: this.coins } });
   }
 }

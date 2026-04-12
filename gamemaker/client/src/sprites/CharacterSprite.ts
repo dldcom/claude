@@ -3,11 +3,12 @@ import { AvatarConfig } from '../types/index.js';
 
 const LAYER_ORDER: (keyof AvatarConfig)[] = ['body', 'legs', 'feet', 'torso', 'hair'];
 
+// LPC walk.png layout: 4 rows (up=0, left=1, down=2, right=3), 9 frames each, 64×64
 const WALK_ROWS: Record<string, number> = {
-  up: 8,
-  left: 9,
-  down: 10,
-  right: 11,
+  up: 0,
+  left: 1,
+  down: 2,
+  right: 3,
 };
 
 const FRAME_RATE = 10;

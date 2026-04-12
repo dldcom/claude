@@ -4,6 +4,7 @@ import { TouchControls } from '../ui/TouchControls.js';
 import { HUD } from '../ui/HUD.js';
 import { api } from '../api/client.js';
 import { Student, Region } from '../types/index.js';
+import { CharacterSprite } from '../sprites/CharacterSprite.js';
 
 const PLAYER_SPEED = 200;
 
@@ -25,6 +26,7 @@ interface ShopZone {
 export class HubScene extends Phaser.Scene {
   private student!: Student;
   private player!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  private characterSprite: CharacterSprite | null = null;
   private controls!: TouchControls;
   private hud!: HUD;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -59,16 +61,38 @@ export class HubScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0.5, 0.5).setDepth(10);
 
-    // Player
-    const playerGfx = this.add.graphics();
-    playerGfx.fillStyle(0xff6b6b);
-    playerGfx.fillRect(0, 0, 24, 32);
-    playerGfx.generateTexture('player_hub', 24, 32);
-    playerGfx.destroy();
+    // Player — try CharacterSprite first, fall back to rectangle
+    const avatarConfig = this.student.avatar_config;
+    let usedSprite = false;
+    if (avatarConfig) {
+      try {
+        this.characterSprite = new CharacterSprite(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, avatarConfig);
+        // Check that at least one layer was rendered
+        if (this.characterSprite.getContainer().list.length > 0) {
+          this.characterSprite.setDepth(50);
+          usedSprite = true;
+        } else {
+          this.characterSprite.destroy();
+          this.characterSprite = null;
+        }
+      } catch {
+        this.characterSprite = null;
+      }
+    }
 
-    this.player = this.physics.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'player_hub') as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    if (!usedSprite) {
+      const playerGfx = this.add.graphics();
+      playerGfx.fillStyle(0xff6b6b);
+      playerGfx.fillRect(0, 0, 24, 32);
+      playerGfx.generateTexture('player_hub', 24, 32);
+      playerGfx.destroy();
+    }
+
+    // Physics body always uses an image (invisible if using CharacterSprite)
+    this.player = this.physics.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, usedSprite ? '__DEFAULT' : 'player_hub') as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    if (usedSprite) this.player.setAlpha(0); // hide physics body when sprite is shown
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(50);
+    this.player.setDepth(49);
 
     // Portals
     let regions: Region[] = [];
@@ -200,6 +224,17 @@ export class HubScene extends Phaser.Scene {
 
     this.player.setVelocity(vx, vy);
 
+    // Sync CharacterSprite position and animation
+    if (this.characterSprite) {
+      this.characterSprite.setPosition(this.player.x, this.player.y);
+      if (vx !== 0 || vy !== 0) {
+        const dir = vx < 0 ? 'left' : vx > 0 ? 'right' : vy < 0 ? 'up' : 'down';
+        this.characterSprite.walk(dir);
+      } else {
+        this.characterSprite.playIdle();
+      }
+    }
+
     // Interaction: ENTER key or A button
     const aPressed = this.controls.isAJustPressed();
     const enterPressed = Phaser.Input.Keyboard.JustDown(this.enterKey);
@@ -233,6 +268,8 @@ export class HubScene extends Phaser.Scene {
     this.enterCooldown = true;
     this.controls.destroy();
     this.hud.destroy();
+    this.characterSprite?.destroy();
+    this.characterSprite = null;
     this.scene.start(sceneKey, data);
   }
 }
