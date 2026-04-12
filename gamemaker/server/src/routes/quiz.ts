@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Pool } from 'pg';
+import { broadcastToClass } from '../websocket/dashboard.js';
 
 export function createQuizRouter(pool: Pool): Router {
   const router = Router();
@@ -81,6 +82,27 @@ export function createQuizRouter(pool: Pool): Router {
            ON CONFLICT (student_id, npc_id) DO UPDATE SET is_cleared = TRUE, cleared_at = NOW()`,
           [student_id, question.npc_id],
         );
+      }
+
+      // 6. Broadcast to teacher dashboard
+      try {
+        const studentResult = await pool.query<{ class_id: number; name: string }>(
+          'SELECT class_id, name FROM students WHERE id = $1',
+          [student_id],
+        );
+        if (studentResult.rowCount && studentResult.rowCount > 0) {
+          const student = studentResult.rows[0]!;
+          broadcastToClass(student.class_id, {
+            type: isCorrect ? 'quiz_correct' : 'quiz_wrong',
+            student_id,
+            student_name: student.name,
+            question_id,
+            npc_id: question.npc_id,
+            coins_earned: coinsEarned,
+          });
+        }
+      } catch (broadcastErr) {
+        console.error('Broadcast error:', broadcastErr);
       }
 
       res.json({ is_correct: isCorrect, coins_earned: coinsEarned });

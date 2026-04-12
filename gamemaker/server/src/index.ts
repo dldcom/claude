@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import pool from './db/pool.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createClassesRouter } from './routes/classes.js';
@@ -10,6 +12,9 @@ import { createRegionsRouter } from './routes/regions.js';
 import { createProgressRouter } from './routes/progress.js';
 import { createQuizRouter } from './routes/quiz.js';
 import { createShopRouter } from './routes/shop.js';
+import { setupDashboardWebSocket } from './websocket/dashboard.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -28,8 +33,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Serve teacher dashboard static files
+app.use('/dashboard', express.static(join(__dirname, '../../teacher-dashboard')));
+
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 const server = createServer(app);
+
+setupDashboardWebSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

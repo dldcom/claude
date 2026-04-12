@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교사 대시보드</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Login View -->
+  <div id="login-view" class="view">
+    <div class="login-box">
+      <h1>교사 대시보드</h1>
+      <div class="form-group">
+        <label for="login-id">아이디</label>
+        <input type="text" id="login-id" placeholder="아이디를 입력하세요" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">비밀번호</label>
+        <input type="password" id="login-password" placeholder="비밀번호를 입력하세요" />
+      </div>
+      <div id="login-error" class="error-msg hidden"></div>
+      <div class="button-row">
+        <button id="btn-login" class="btn btn-primary">로그인</button>
+        <button id="btn-register" class="btn btn-secondary">회원가입</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard View -->
+  <div id="dashboard-view" class="view hidden">
+    <header class="dashboard-header">
+      <h2>교사 대시보드</h2>
+      <div class="header-controls">
+        <label for="class-select">반 선택</label>
+        <select id="class-select"></select>
+        <button id="btn-manage" class="btn btn-secondary">학생관리</button>
+        <button id="btn-logout" class="btn btn-outline">로그아웃</button>
+      </div>
+    </header>
+    <main>
+      <div id="stats-panel" class="stats-panel"></div>
+      <div id="progress-grid" class="progress-grid"></div>
+    </main>
+  </div>
+
+  <!-- Manage View -->
+  <div id="manage-view" class="view hidden">
+    <div class="manage-container">
+      <h2>학생 관리</h2>
+      <div class="form-group">
+        <label for="bulk-names">학생 이름 일괄 등록 (줄바꿈으로 구분)</label>
+        <textarea id="bulk-names" rows="8" placeholder="홍길동&#10;김철수&#10;이영희"></textarea>
+      </div>
+      <div id="bulk-error" class="error-msg hidden"></div>
+      <div class="button-row">
+        <button id="btn-bulk-add" class="btn btn-primary">일괄 등록</button>
+        <button id="btn-back" class="btn btn-outline">돌아가기</button>
+      </div>
+      <div id="student-list" class="student-list"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
