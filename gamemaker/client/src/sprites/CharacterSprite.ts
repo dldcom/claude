@@ -7,8 +7,8 @@ const AVATAR_LAYERS: (keyof AvatarConfig)[] = ['body', 'legs', 'feet', 'torso', 
 // 고정 레이어 (항상 표시, 아바타 설정 불필요)
 const FIXED_LAYERS: { key: string; textureKey: string }[] = [
   { key: 'head', textureKey: 'lpc_head_child' },
-  { key: 'eyes', textureKey: 'lpc_eyes_child' },
   { key: 'nose', textureKey: 'lpc_nose_button' },
+  { key: 'eyes', textureKey: 'lpc_eyes_child' },
 ];
 
 // LPC walk.png layout: 4 rows (up=0, left=1, down=2, right=3), 9 frames each, 64×64
