@@ -1,0 +1,43 @@
+{
+  "region": {
+    "name": "1-1 평화통일을 위한 노력",
+    "theme": "한반도 접경 마을",
+    "sort_order": 1,
+    "intro_dialogue": ["여기는 휴전선 근처의 작은 마을이야.", "이 마을에는 분단의 아픔을 간직한 사람들이 살고 있단다.", "그들의 이야기를 들어볼래?"],
+    "ending_dialogue": [],
+    "epilogue_dialogue": ["이 마을에서 만난 사람들은 모두 같은 꿈을 꾸고 있었어.", "다시 하나가 되는 그 날을..."],
+    "story_synopsis": "분단 마을에서 실향민 등을 만나며 통일의 필요성을 느끼는 이야기"
+  },
+  "npcs": [
+    {
+      "name": "실향민 할아버지",
+      "character_desc": "80대, 함경도 사투리, 따뜻하지만 슬픈 눈",
+      "story_phase": "intro",
+      "position_x": 300,
+      "position_y": 200,
+      "quiz_type": "blank_fill",
+      "quiz_difficulty": "easy",
+      "sort_order": 1,
+      "dialogue_before": [
+        "어서 오너라, 젊은이.",
+        "나는 함흥에서 태어났단다. 1950년 그 여름, 포격 소리에 잠을 깼지.",
+        "가족과 헤어져 여기까지 왔어. 60년이 넘었구나..."
+      ],
+      "dialogue_correct": ["그래, 맞아. 역시 똑똑하구나.", "저 시절을 잊지 않아줘서 고맙다."],
+      "dialogue_wrong": ["허허, 다시 한번 생각해보렴.", "내가 고향을 떠난 그 해를 잘 떠올려보거라..."],
+      "dialogue_after": ["다시 왔구나. 반갑다, 젊은이."],
+      "next_npc_hint": null,
+      "questions": [
+        {
+          "content": {
+            "type": "blank_fill",
+            "sentence": "1950년에 일어난 _____으로 인해 많은 사람들이 고향을 잃었습니다.",
+            "options": ["6·25 전쟁", "임진왜란", "한국 광복", "4·19 혁명"]
+          },
+          "correct_answer": "6·25 전쟁",
+          "coin_reward": 10
+        }
+      ]
+    }
+  ]
+}

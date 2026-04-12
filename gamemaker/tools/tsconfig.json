@@ -1,0 +1,8 @@
+{
+  "extends": "../server/tsconfig.json",
+  "compilerOptions": {
+    "rootDirs": ["."],
+    "outDir": "../server/dist/tools"
+  },
+  "include": ["."]
+}
