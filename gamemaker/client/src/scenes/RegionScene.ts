@@ -7,7 +7,7 @@ import { HUD } from '../ui/HUD.js';
 import { api } from '../api/client.js';
 import { Student, NPC, Question, StudentProgress, RegionDetailResponse } from '../types/index.js';
 
-const PLAYER_SPEED = 120;
+const PLAYER_SPEED = 200;
 const NPC_INTERACT_DIST = 50;
 const BONUS_COINS = 30;
 

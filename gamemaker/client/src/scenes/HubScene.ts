@@ -5,7 +5,7 @@ import { HUD } from '../ui/HUD.js';
 import { api } from '../api/client.js';
 import { Student, Region } from '../types/index.js';
 
-const PLAYER_SPEED = 120;
+const PLAYER_SPEED = 200;
 
 interface PortalZone {
   body: Phaser.GameObjects.Rectangle;
