@@ -13,8 +13,8 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDirs": ["src", "tests"]
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "exclude": ["node_modules", "dist"]
 }
