@@ -9,6 +9,7 @@ import { createStudentsRouter } from './routes/students.js';
 import { createRegionsRouter } from './routes/regions.js';
 import { createProgressRouter } from './routes/progress.js';
 import { createQuizRouter } from './routes/quiz.js';
+import { createShopRouter } from './routes/shop.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/students', createStudentsRouter(pool));
 app.use('/api/regions', createRegionsRouter(pool));
 app.use('/api/progress', createProgressRouter(pool));
 app.use('/api/quiz', createQuizRouter(pool));
+app.use('/api/shop', createShopRouter(pool));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
