@@ -40,6 +40,7 @@ export class HubScene extends Phaser.Scene {
   init(data: { student: Student }): void {
     this.student = data.student;
     this.portals = [];
+    this.enterCooldown = false;
   }
 
   async create(): Promise<void> {

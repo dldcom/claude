@@ -70,11 +70,16 @@ export class ShopScene extends Phaser.Scene {
       color: '#ff4444',
     }).setOrigin(0.5, 1).setDepth(10);
 
-    // Controls hint
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 52, '↑↓: 선택   ENTER: 구매   ESC: 뒤로', {
-      fontSize: '12px',
-      color: '#666688',
-    }).setOrigin(0.5, 1).setDepth(10);
+    // Back button
+    const backBtn = this.add.text(20, 28, '← 돌아가기', {
+      fontSize: '15px',
+      color: '#aaaacc',
+      fontStyle: 'bold',
+    }).setDepth(10).setInteractive({ useHandCursor: true });
+
+    backBtn.on('pointerover', () => backBtn.setColor('#ffffff'));
+    backBtn.on('pointerout', () => backBtn.setColor('#aaaacc'));
+    backBtn.on('pointerdown', () => this.returnToHub());
 
     // Keyboard
     this.cursors = this.input.keyboard!.createCursorKeys();
