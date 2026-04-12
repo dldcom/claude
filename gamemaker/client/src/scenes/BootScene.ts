@@ -44,8 +44,11 @@ export class BootScene extends Phaser.Scene {
     // Row layout: 0=up, 1=left, 2=down, 3=right
     const SPRITE_FRAME = { frameWidth: 64, frameHeight: 64 };
 
-    // Body
+    // Body + Head/Eyes/Nose (고정 파츠)
     this.load.spritesheet('lpc_body_child_light', 'assets/sprites/body_child_light.png', SPRITE_FRAME);
+    this.load.spritesheet('lpc_head_child', 'assets/sprites/head_child.png', SPRITE_FRAME);
+    this.load.spritesheet('lpc_eyes_child', 'assets/sprites/eyes_child.png', SPRITE_FRAME);
+    this.load.spritesheet('lpc_nose_button', 'assets/sprites/nose_button.png', SPRITE_FRAME);
 
     // Hair
     this.load.spritesheet('lpc_hair_short_brown', 'assets/sprites/hair_short_brown.png', SPRITE_FRAME);

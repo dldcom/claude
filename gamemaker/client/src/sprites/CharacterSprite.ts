@@ -1,7 +1,15 @@
 import Phaser from 'phaser';
 import { AvatarConfig } from '../types/index.js';
 
-const LAYER_ORDER: (keyof AvatarConfig)[] = ['body', 'legs', 'feet', 'torso', 'hair'];
+// 아바타 설정에서 오는 레이어
+const AVATAR_LAYERS: (keyof AvatarConfig)[] = ['body', 'legs', 'feet', 'torso', 'hair'];
+
+// 고정 레이어 (항상 표시, 아바타 설정 불필요)
+const FIXED_LAYERS: { key: string; textureKey: string }[] = [
+  { key: 'head', textureKey: 'lpc_head_child' },
+  { key: 'eyes', textureKey: 'lpc_eyes_child' },
+  { key: 'nose', textureKey: 'lpc_nose_button' },
+];
 
 // LPC walk.png layout: 4 rows (up=0, left=1, down=2, right=3), 9 frames each, 64×64
 const WALK_ROWS: Record<string, number> = {
@@ -24,7 +32,9 @@ export class CharacterSprite {
     this.scene = scene;
     this.container = scene.add.container(x, y);
 
-    for (const layer of LAYER_ORDER) {
+    // 아바타 설정 레이어 (body, legs, feet, torso)
+    for (const layer of AVATAR_LAYERS) {
+      if (layer === 'hair') continue; // hair는 얼굴 위에 올려야 하므로 나중에
       const value = avatarConfig[layer];
       if (!value) continue;
 
@@ -33,10 +43,33 @@ export class CharacterSprite {
 
       const sprite = scene.add.sprite(0, 0, textureKey);
       sprite.setOrigin(0.5, 0.75);
-
       this.ensureAnimations(scene, textureKey);
       this.sprites.set(layer, sprite);
       this.container.add(sprite);
+    }
+
+    // 고정 레이어 (머리 윤곽, 눈, 코)
+    for (const fixed of FIXED_LAYERS) {
+      if (!scene.textures.exists(fixed.textureKey)) continue;
+
+      const sprite = scene.add.sprite(0, 0, fixed.textureKey);
+      sprite.setOrigin(0.5, 0.75);
+      this.ensureAnimations(scene, fixed.textureKey);
+      this.sprites.set(fixed.key, sprite);
+      this.container.add(sprite);
+    }
+
+    // 머리카락은 얼굴 위에
+    const hairValue = avatarConfig.hair;
+    if (hairValue) {
+      const hairKey = `lpc_hair_${hairValue.replace(/\//g, '_')}`;
+      if (scene.textures.exists(hairKey)) {
+        const sprite = scene.add.sprite(0, 0, hairKey);
+        sprite.setOrigin(0.5, 0.75);
+        this.ensureAnimations(scene, hairKey);
+        this.sprites.set('hair', sprite);
+        this.container.add(sprite);
+      }
     }
 
     this.playIdle();
@@ -61,22 +94,12 @@ export class CharacterSprite {
 
   walk(direction: string): void {
     this.currentDirection = direction;
-    for (const [layer, sprite] of this.sprites) {
-      const textureKey = `lpc_${layer}_${this.getLayerValue(layer)}`;
-      const animKey = `${textureKey}_walk_${direction}`;
+    for (const [, sprite] of this.sprites) {
+      const animKey = `${sprite.texture.key}_walk_${direction}`;
       if (this.scene.anims.exists(animKey)) {
         sprite.play(animKey, true);
       }
     }
-  }
-
-  private getLayerValue(layer: string): string {
-    // Derive the value from the existing texture key
-    const sprite = this.sprites.get(layer);
-    if (!sprite) return '';
-    // textureKey format: lpc_{layer}_{value_with_underscores}
-    const prefix = `lpc_${layer}_`;
-    return sprite.texture.key.slice(prefix.length);
   }
 
   playIdle(): void {
