@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../config.js';
 import { api } from '../api/client.js';
 import { Student, AvatarConfig } from '../types/index.js';
+import { CharacterSprite } from '../sprites/CharacterSprite.js';
 
 interface SlotOption {
   value: string;
@@ -15,15 +16,17 @@ interface Slot {
   selectedIndex: number;
 }
 
+// 옵션 value는 BootScene에서 로드한 스프라이트 키와 일치해야 함
+// 키 형식: lpc_{layer}_{value.replace('/', '_')}
 const SLOTS: Omit<Slot, 'selectedIndex'>[] = [
   {
     key: 'hair',
     name: '머리',
     options: [
-      { value: 'longhair/brown', label: '긴 갈색 머리' },
-      { value: 'shorthair/black', label: '짧은 검은 머리' },
-      { value: 'longhair/blonde', label: '긴 금발 머리' },
-      { value: 'shorthair/red', label: '짧은 빨간 머리' },
+      { value: 'short/brown', label: '짧은 갈색 머리' },
+      { value: 'short/black', label: '짧은 검은 머리' },
+      { value: 'long/brown', label: '긴 갈색 머리' },
+      { value: 'curly/black', label: '곱슬 검은 머리' },
     ],
   },
   {
@@ -32,8 +35,7 @@ const SLOTS: Omit<Slot, 'selectedIndex'>[] = [
     options: [
       { value: 'shirt/blue', label: '파란 셔츠' },
       { value: 'shirt/red', label: '빨간 셔츠' },
-      { value: 'armor/leather', label: '가죽 갑옷' },
-      { value: 'shirt/green', label: '초록 셔츠' },
+      { value: 'vest/green', label: '초록 조끼' },
       { value: 'shirt/white', label: '흰 셔츠' },
     ],
   },
@@ -41,20 +43,19 @@ const SLOTS: Omit<Slot, 'selectedIndex'>[] = [
     key: 'legs',
     name: '하의',
     options: [
-      { value: 'pants/blue', label: '파란 바지' },
+      { value: 'pants/dark', label: '진청 바지' },
       { value: 'pants/brown', label: '갈색 바지' },
+      { value: 'shorts/black', label: '검은 반바지' },
       { value: 'skirt/blue', label: '파란 치마' },
-      { value: 'pants/black', label: '검은 바지' },
     ],
   },
   {
     key: 'feet',
     name: '신발',
     options: [
-      { value: 'boots/brown', label: '갈색 부츠' },
-      { value: 'shoes/black', label: '검은 운동화' },
-      { value: 'boots/black', label: '검은 부츠' },
-      { value: 'sandals/brown', label: '갈색 샌들' },
+      { value: 'shoes/brown', label: '갈색 구두' },
+      { value: 'shoes/black', label: '검은 구두' },
+      { value: 'shoes/white', label: '흰 운동화' },
     ],
   },
 ];
@@ -69,11 +70,13 @@ export class CharacterCreateScene extends Phaser.Scene {
   // UI elements
   private slotTexts: Phaser.GameObjects.Text[] = [];
   private optionTexts: Phaser.GameObjects.Text[][] = [];
-  private previewText!: Phaser.GameObjects.Text;
+  private previewSprite: CharacterSprite | null = null;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private prevActiveSlot: number = -1;
   private prevOptionIndices: number[] = [];
+  private previewDirection: string = 'down';
+  private previewTimer: number = 0;
 
   constructor() {
     super({ key: 'CharacterCreate' });
@@ -100,18 +103,16 @@ export class CharacterCreateScene extends Phaser.Scene {
     this.buildSlotUI();
 
     // Right panel: preview
-    this.add.text(520, 80, '미리보기', {
+    this.add.text(560, 80, '미리보기', {
       fontSize: '16px',
       color: '#aaaaaa',
     }).setOrigin(0.5, 0);
 
-    this.previewText = this.add.text(520, 110, '', {
-      fontSize: '14px',
-      color: '#ffffff',
-      lineSpacing: 8,
-    }).setOrigin(0.5, 0);
+    // Preview background
+    this.add.rectangle(560, 240, 160, 200, 0x111122, 0.6)
+      .setStrokeStyle(1, 0x444466);
 
-    this.updatePreview();
+    this.rebuildPreview();
 
     // "완료" button
     const doneBtn = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 40, '✓ 완료', {
@@ -179,7 +180,7 @@ export class CharacterCreateScene extends Phaser.Scene {
           this.activeSlotIndex = capturedSi;
           this.slots[capturedSi].selectedIndex = capturedOi;
           this.refreshUI();
-          this.updatePreview();
+          this.rebuildPreview();
         });
 
         optionRow.push(optText);
@@ -206,20 +207,53 @@ export class CharacterCreateScene extends Phaser.Scene {
         });
       }
     }
-    this.updatePreview();
+    this.rebuildPreview();
   }
 
-  private updatePreview(): void {
-    const lines = [`몸: 어린이/밝은 피부 (고정)`];
-    for (const slot of this.slots) {
-      const opt = slot.options[slot.selectedIndex];
-      lines.push(`${slot.name}: ${opt.label}`);
+  private rebuildPreview(): void {
+    // Destroy old sprite
+    if (this.previewSprite) {
+      this.previewSprite.destroy();
+      this.previewSprite = null;
     }
-    this.previewText?.setText(lines.join('\n'));
+
+    const config = this.buildAvatarConfig();
+    try {
+      this.previewSprite = new CharacterSprite(this, 560, 250, config);
+      this.previewSprite.setDepth(100);
+      // Scale up for better visibility
+      this.previewSprite.getContainer().setScale(2.5);
+      // Start walking animation
+      this.previewSprite.walk('down');
+    } catch {
+      this.previewSprite = null;
+    }
   }
 
-  update(): void {
+  private buildAvatarConfig(): AvatarConfig {
+    return {
+      body: FIXED_BODY,
+      hair: this.slots[0].options[this.slots[0].selectedIndex].value,
+      torso: this.slots[1].options[this.slots[1].selectedIndex].value,
+      legs: this.slots[2].options[this.slots[2].selectedIndex].value,
+      feet: this.slots[3].options[this.slots[3].selectedIndex].value,
+    };
+  }
+
+  update(_time: number, delta: number): void {
     if (!this.cursors) return;
+
+    // 미리보기 캐릭터 방향 자동 전환 (2초마다)
+    if (this.previewSprite) {
+      this.previewTimer += delta;
+      if (this.previewTimer > 2000) {
+        this.previewTimer = 0;
+        const dirs = ['down', 'left', 'up', 'right'];
+        const curIdx = dirs.indexOf(this.previewDirection);
+        this.previewDirection = dirs[(curIdx + 1) % 4];
+        this.previewSprite.walk(this.previewDirection);
+      }
+    }
 
     const upJust = Phaser.Input.Keyboard.JustDown(this.cursors.up);
     const downJust = Phaser.Input.Keyboard.JustDown(this.cursors.down);
@@ -247,13 +281,7 @@ export class CharacterCreateScene extends Phaser.Scene {
   }
 
   private async confirmSelection(): Promise<void> {
-    const avatarConfig: AvatarConfig = {
-      body: FIXED_BODY,
-      hair: this.slots[0].options[this.slots[0].selectedIndex].value,
-      torso: this.slots[1].options[this.slots[1].selectedIndex].value,
-      legs: this.slots[2].options[this.slots[2].selectedIndex].value,
-      feet: this.slots[3].options[this.slots[3].selectedIndex].value,
-    };
+    const avatarConfig = this.buildAvatarConfig();
 
     try {
       await api.updateAvatar(this.student.id, avatarConfig);
