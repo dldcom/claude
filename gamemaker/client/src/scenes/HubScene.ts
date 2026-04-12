@@ -131,7 +131,18 @@ export class HubScene extends Phaser.Scene {
 
         const body = this.add.rectangle(px, py, portalW, portalH, color)
           .setStrokeStyle(2, 0xffffff)
-          .setDepth(10);
+          .setDepth(10)
+          .setInteractive({ useHandCursor: isActive });
+
+        if (isActive) {
+          body.on('pointerover', () => body.setFillStyle(0x5ba0e9));
+          body.on('pointerout', () => body.setFillStyle(color));
+          body.on('pointerdown', () => {
+            if (!this.enterCooldown && region) {
+              this.transitionTo('Region', { student: this.student, regionId: region.id });
+            }
+          });
+        }
 
         const labelText = region ? region.name : `지역 ${idx + 1}`;
         const label = this.add.text(px, py, labelText, {
@@ -153,7 +164,16 @@ export class HubScene extends Phaser.Scene {
 
     const body = this.add.rectangle(sx, sy, 80, 70, 0xd4a017)
       .setStrokeStyle(2, 0xffffff)
-      .setDepth(10);
+      .setDepth(10)
+      .setInteractive({ useHandCursor: true });
+
+    body.on('pointerover', () => body.setFillStyle(0xe4b027));
+    body.on('pointerout', () => body.setFillStyle(0xd4a017));
+    body.on('pointerdown', () => {
+      if (!this.enterCooldown) {
+        this.transitionTo('Shop', { student: this.student });
+      }
+    });
 
     const label = this.add.text(sx, sy, '상점', {
       fontSize: '16px',
