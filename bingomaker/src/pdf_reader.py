@@ -106,13 +106,20 @@ def extract_text_by_page(pdf_path: str) -> tuple[str, dict[int, str]]:
 
 
 def parse_subunit_filename(pdf_path: str) -> dict:
-    """소단원 PDF 파일명에서 단원, 소단원, 이름을 추출한다.
+    """PDF 파일명에서 단원/소단원 정보를 추정한다.
+
+    반환 dict 에는 항상 다음 필드가 포함된다.
+      - ``kind``: ``"subunit"`` | ``"unit"`` | ``"unknown"``
+      - ``unit``: 단원 번호 (kind=="unknown"이면 None)
+    소단원 파싱 성공 시 추가로 ``subunit``, ``subunit_name``을 포함하며,
+    학년/학기 정보가 파일명에 있으면 ``grade``, ``semester``, ``subject``도 포함.
 
     지원 형식:
-      1) N단원_M소단원_이름.pdf
-         예: 1단원_2소단원_우리_지역의_위치와_특성.pdf
-      2) <과목prefix>_<학년>-<학기>-<단원>_M소단원_이름.pdf
-         예: society_6-1-1_1소단원_평화_통일을_위한_노력.pdf
+      1) N단원_M소단원_이름.pdf                          → kind="subunit"
+      2) <과목prefix>_<학년>-<학기>-<단원>_M소단원_이름.pdf → kind="subunit"
+      3) <과목prefix>_<학년>-<학기>-<단원>_{교과서|단원}.pdf → kind="unit"
+      4) [과목]<학년>-<학기>-<단원>_{교과서|단원}.pdf       → kind="unit"
+      5) 그 외: kind="unknown" (사용자에게 수동 입력을 요청해야 함)
     """
     filename = Path(pdf_path).stem
 
@@ -120,25 +127,49 @@ def parse_subunit_filename(pdf_path: str) -> dict:
     match = re.search(r"(\d+)단원_(\d+)소단원_(.+)", filename)
     if match:
         return {
+            "kind": "subunit",
             "unit": int(match.group(1)),
             "subunit": int(match.group(2)),
             "subunit_name": match.group(3).replace("_", " "),
         }
 
-    # 형식 2: prefix_G-S-U_M소단원_이름
-    match = re.search(r"[A-Za-z]+_(\d+)-(\d+)-(\d+)_(\d+)소단원_(.+)", filename)
+    # 형식 2: prefix_G-S-U_M소단원_이름 (prefix는 영문 또는 [과목])
+    match = re.search(
+        r"(?:\[([^\]]+)\]|([A-Za-z]+))_?(\d+)-(\d+)-(\d+)_(\d+)소단원_(.+)",
+        filename,
+    )
     if match:
+        subject = match.group(1) or match.group(2)
         return {
-            "grade": int(match.group(1)),
-            "semester": int(match.group(2)),
-            "unit": int(match.group(3)),
-            "subunit": int(match.group(4)),
-            "subunit_name": match.group(5).replace("_", " "),
+            "kind": "subunit",
+            "subject": subject,
+            "grade": int(match.group(3)),
+            "semester": int(match.group(4)),
+            "unit": int(match.group(5)),
+            "subunit": int(match.group(6)),
+            "subunit_name": match.group(7).replace("_", " "),
         }
 
-    raise ValueError(f"파일명 형식이 올바르지 않습니다: {filename}\n"
-                     f"예상 형식: N단원_M소단원_이름.pdf 또는 "
-                     f"prefix_G-S-U_M소단원_이름.pdf")
+    # 형식 3·4: 단원 전체 (prefix_G-S-U_* 또는 [과목]G-S-U_*)
+    match = re.search(
+        r"(?:\[([^\]]+)\]|([A-Za-z]+))_?(\d+)-(\d+)-(\d+)(?:_.*)?$",
+        filename,
+    )
+    if match:
+        subject = match.group(1) or match.group(2)
+        return {
+            "kind": "unit",
+            "subject": subject,
+            "grade": int(match.group(3)),
+            "semester": int(match.group(4)),
+            "unit": int(match.group(5)),
+        }
+
+    # 그 외: 정보를 추정할 수 없으므로 호출자에게 직접 입력을 위임
+    return {
+        "kind": "unknown",
+        "unit": None,
+    }
 
 
 def _detect_page_numbers(page) -> list[int]:

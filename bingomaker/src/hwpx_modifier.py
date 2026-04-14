@@ -63,7 +63,7 @@ def create_bingo_worksheet(
     if subunit is not None:
         full_unit_name = f"{unit}-{subunit} {unit_name}"
     else:
-        full_unit_name = f"{unit}. {unit_name}"
+        full_unit_name = f"{unit} {unit_name}"
 
     # 1. 단원명 교체
     xml = xml.replace("3. 지구, 대륙 그리고 국가들", full_unit_name)
