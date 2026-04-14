@@ -1,5 +1,60 @@
+import re
 import zipfile
 from pathlib import Path
+
+
+# 문제 셀(약 146mm, 12pt 한글) 한 줄에 들어가는 문자 수 기준
+_CHARS_PER_LINE = 40
+# 문제 표 전체 최대 높이 (단위 mm) — 헤더 행까지 포함한 하드 상한
+_MAX_TABLE_HEIGHT_MM = 330.0
+# 문제 표 헤더(문제/정답 제목행) 높이 (HWPUNIT). 템플릿 그대로 유지.
+_HEADER_ROW_HEIGHT = 2263
+# 1 mm = 283.464 HWPUNIT (=1/7200 inch)
+_HWPUNIT_PER_MM = 283.464
+
+
+def _estimate_line_count(question_text: str) -> int:
+    """질문 문장의 문자 수로 몇 줄로 렌더링될지 대략 추정 (1~3줄)."""
+    n = -(-len(question_text) // _CHARS_PER_LINE)  # ceil
+    return max(1, min(n, 3))
+
+
+def _adjust_question_row_heights(xml: str, question_texts: list[str]) -> str:
+    """각 문제 행 높이를 질문 길이(추정 줄수)에 비례해 재분배한다.
+
+    - 헤더 행 높이는 그대로 두고, 25개 문제 행에만 예산을 배분
+    - 총 높이(헤더 포함)가 ``_MAX_TABLE_HEIGHT_MM``를 넘지 않도록 정확히 채움
+    - 줄당 높이는 ``budget / total_line_units``로, 2줄짜리는 1줄짜리의 2배
+      높이가 된다(비례 유지).
+    """
+    lines_per_q = [_estimate_line_count(q) for q in question_texts]
+    total_line_units = sum(lines_per_q)
+
+    budget = int(_MAX_TABLE_HEIGHT_MM * _HWPUNIT_PER_MM) - _HEADER_ROW_HEIGHT
+    per_line = budget // total_line_units  # 정수, 하드 상한 엄수
+
+    heights = [n * per_line for n in lines_per_q]
+
+    for q_text, new_h in zip(question_texts, heights):
+        idx = xml.find(q_text)
+        if idx == -1:
+            continue
+        tr_start = xml.rfind("<hp:tr>", 0, idx)
+        if tr_start == -1:
+            continue
+        tr_end = xml.find("</hp:tr>", idx)
+        if tr_end == -1:
+            continue
+        tr_end += len("</hp:tr>")
+        row = xml[tr_start:tr_end]
+        new_row = re.sub(
+            r'(<hp:cellSz width="\d+" height=")\d+("/>)',
+            rf'\g<1>{new_h}\g<2>',
+            row,
+        )
+        xml = xml[:tr_start] + new_row + xml[tr_end:]
+
+    return xml
 
 
 # 템플릿의 기존 문제/정답 텍스트 (인덱스 순서로 정렬)
@@ -71,7 +126,11 @@ def create_bingo_worksheet(
     # 2. 학년 교체 (단순 replace)
     xml = xml.replace("6학년", f"{grade}학년")
 
-    # 3. 페이지 범위 교체
+    # 3. 페이지 범위 교체 (신·구 템플릿 두 포맷 모두 지원)
+    xml = xml.replace(
+        "교과서 122쪽 ~ 157쪽",
+        f"교과서 {page_start}쪽 ~ {page_end}쪽",
+    )
     xml = xml.replace(
         "교과서 122쪽부터 157쪽까지",
         f"교과서 {page_start}쪽부터 {page_end}쪽까지",
@@ -116,6 +175,13 @@ def create_bingo_worksheet(
             f"<hp:t>{old_a}</hp:t>",
             f"<hp:t>{new_a}</hp:t>",
         )
+
+    # 7. 문제 행 높이 재분배 (질문 길이 비례, 전체 표 ≤ 233mm)
+    prefixed_questions = [
+        (f"{i + 1}. {q['question']}" if i >= 1 else q["question"])
+        for i, q in enumerate(questions)
+    ]
+    xml = _adjust_question_row_heights(xml, prefixed_questions)
 
     # 새 HWPX 파일 생성 (ZIP) - 원본 속성 유지
     with zipfile.ZipFile(template_path, "r") as zin:

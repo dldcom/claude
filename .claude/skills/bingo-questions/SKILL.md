@@ -154,7 +154,7 @@ else:  # kind == "unit"
     stem = f"{metadata['unit']}단원_{metadata['unit_name'].replace(' ', '_')}_빙고학습지"
 
 output_path = str(output_dir / f"{stem}.hwpx")
-template_path = "bingomaker/template/bingo.hwpx"
+template_path = "bingomaker/template/bingo_template.hwpx"
 
 create_bingo_worksheet(template_path, output_path, questions, hwpx_metadata, page_start, page_end)
 print(f"학습지 생성 완료: {output_path}")
@@ -162,3 +162,19 @@ print(f"학습지 생성 완료: {output_path}")
 
 NOTE: 파일명으로 과목/학년/학기를 얻지 못한 경우(subject 등이 비어 있는 경우),
       사용자에게 확인 후 hwpx_metadata를 보정한다.
+
+### 문제 표 행 높이 자동 조정 (자동 적용, 별도 설정 불필요)
+
+`create_bingo_worksheet()` 내부에서 각 문제 행의 높이를 **질문 문장 길이에
+비례해 자동 재분배**한다. 구현 상수(`bingomaker/src/hwpx_modifier.py`):
+
+- `_CHARS_PER_LINE = 40` — 12pt 한글·146mm 열폭 기준 한 줄 추정 글자 수
+- `_MAX_TABLE_HEIGHT_MM = 330.0` — 헤더 포함 문제 표 전체 최대 높이 상한
+- `_HEADER_ROW_HEIGHT = 2263` — 헤더 행 높이 고정
+
+결과:
+- 1줄 질문: 약 7.7mm, 2줄 질문: 약 15.3mm, 3줄 질문: 약 23.0mm
+- 총 문제 표 높이 ≤ 330mm 엄수(정수 내림으로 살짝 아래서 끝남)
+
+이 동작은 기본으로 적용되므로, 다른 요구(상한 변경 등)가 없는 한 추가
+작업 없이 그대로 쓴다. 상한을 바꿔야 한다면 위 상수를 직접 수정한다.
