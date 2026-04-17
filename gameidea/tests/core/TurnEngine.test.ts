@@ -55,3 +55,44 @@ describe('TurnEngine.move', () => {
     expect(s2.player.position).toEqual({ x: 2, y: 1 });
   });
 });
+
+describe('TurnEngine.move — ice sliding', () => {
+  it('slides through consecutive ice cells', () => {
+    const grid = Grid.createEmpty(7, 3);
+    for (const x of [2, 3, 4]) {
+      grid.setObject(x, 1, { type: 'ice', groupId: 0, role: 'head' });
+    }
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 5, y: 1 });
+  });
+
+  it('stops on last ice when next cell is wall', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'ice', groupId: 0, role: 'head' });
+    grid.setObject(3, 1, { type: 'ice', groupId: 0, role: 'tail' });
+    grid.setGround(4, 1, { type: 'wall' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 3, y: 1 });
+  });
+
+  it('does not slide if first step lands on floor', () => {
+    const grid = Grid.createEmpty(5, 3);
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 2, y: 1 });
+  });
+});

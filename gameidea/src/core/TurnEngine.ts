@@ -13,12 +13,19 @@ export function executeAction(state: GameState, action: ActionKind): GameState {
 }
 
 function tryMove(state: GameState, direction: Direction): GameState {
-  const next = addDelta(state.player.position, direction);
-  if (!canEnter(state.grid, next)) {
-    return state;
+  let cur = state.player.position;
+  let moved = false;
+  while (true) {
+    const next = addDelta(cur, direction);
+    if (!canEnter(state.grid, next)) break;
+    cur = next;
+    moved = true;
+    const obj = state.grid.getObject(cur.x, cur.y);
+    if (obj === null || obj.type !== 'ice') break;
   }
+  if (!moved) return state;
   return state.withPatch({
-    player: { position: next, facing: direction },
+    player: { position: cur, facing: direction },
     turnCount: state.turnCount + 1,
   });
 }
