@@ -27,6 +27,7 @@ export class StageScene extends Phaser.Scene {
   private originX = 0;
   private originY = 0;
   private freezeArrows: Phaser.GameObjects.GameObject[] = [];
+  private meltMode = false;
 
   constructor() {
     super(SCENE_KEYS.Stage);
@@ -36,6 +37,7 @@ export class StageScene extends Phaser.Scene {
     this.levelIndex = data.levelIndex;
     this.undoStack = new UndoStack();
     this.freezeArrows = [];
+    this.meltMode = false;
   }
 
   create() {
@@ -56,7 +58,9 @@ export class StageScene extends Phaser.Scene {
     this.hud = new HUD(this, {
       onUndo: () => this.doUndo(),
       onRestart: () => this.doRestart(),
+      onToggleMelt: () => this.toggleMelt(),
     });
+    this.hud.setMeltMode(this.meltMode);
     this.updateHUD();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.handleTap(p));
@@ -101,7 +105,15 @@ export class StageScene extends Phaser.Scene {
       return;
     }
     if (obj !== null && obj.type === 'ice') {
-      this.applyAction({ kind: 'melt', target: cell });
+      if (this.meltMode) {
+        this.applyAction({ kind: 'melt', target: cell });
+        this.meltMode = false;
+        this.hud.setMeltMode(false);
+      } else {
+        const direction: Direction =
+          dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
+        this.applyAction({ kind: 'move', direction });
+      }
       return;
     }
     if (obj === null && ground.type === 'floor' && this.playerIsNearSpring()) {
@@ -146,8 +158,15 @@ export class StageScene extends Phaser.Scene {
   private doRestart(): void {
     this.undoStack.clear();
     this.state = this.initialState;
+    this.meltMode = false;
+    this.hud.setMeltMode(false);
     this.rerender();
     this.updateHUD();
+  }
+
+  private toggleMelt(): void {
+    this.meltMode = !this.meltMode;
+    this.hud.setMeltMode(this.meltMode);
   }
 
   private updateHUD(): void {

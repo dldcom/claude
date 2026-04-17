@@ -3,7 +3,6 @@ name: "물 한 방울"
 grid: |
   #######
   #S....#
-  #.P..E#
-  #R....#
+  #PW..E#
   #######
 required_flowers: 0

@@ -1,15 +1,16 @@
-// src/ui/HUD.ts
 import Phaser from 'phaser';
 
 export interface HUDCallbacks {
   onUndo: () => void;
   onRestart: () => void;
+  onToggleMelt: () => void;
 }
 
 export class HUD {
   private turnText!: Phaser.GameObjects.Text;
   private flowerText!: Phaser.GameObjects.Text;
   private stageText!: Phaser.GameObjects.Text;
+  private meltBtn!: Phaser.GameObjects.Text;
 
   constructor(private readonly scene: Phaser.Scene, private readonly callbacks: HUDCallbacks) {
     this.build();
@@ -40,6 +41,9 @@ export class HUD {
     this.flowerText.setOrigin(0.5);
 
     this.makeButton(24, h - 48, '🔄 재시작', () => this.callbacks.onRestart());
+    this.meltBtn = this.makeButton(w / 2 - 80, h - 100, '🔥 녹이기 OFF', () =>
+      this.callbacks.onToggleMelt(),
+    );
     this.makeButton(w - 140, h - 48, '↶ Undo', () => this.callbacks.onUndo());
   }
 
@@ -57,6 +61,14 @@ export class HUD {
       onClick();
     });
     return btn;
+  }
+
+  setMeltMode(active: boolean): void {
+    this.meltBtn.setText(active ? '🔥 녹이기 ON' : '🔥 녹이기 OFF');
+    this.meltBtn.setStyle({
+      color: active ? '#ffd166' : '#ffffff',
+      backgroundColor: active ? '#9a3324' : '#444444',
+    });
   }
 
   update(opts: { levelId: string; turnCount: number; flowersCollected: number; flowersRequired: number }): void {

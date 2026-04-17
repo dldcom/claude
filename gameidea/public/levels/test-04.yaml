@@ -2,9 +2,7 @@ id: "test-04"
 name: "얼음 빙판"
 grid: |
   ##########
-  #S.......#
-  #.P....F.#
-  #........#
-  #.......E#
   ##########
-required_flowers: 1
+  #P.W.W.WE#
+  ##########
+required_flowers: 0

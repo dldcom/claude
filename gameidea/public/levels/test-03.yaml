@@ -1,9 +1,8 @@
 id: "test-03"
-name: "상자를 밀어"
+name: "꽃을 모아"
 grid: |
   ########
-  #S.....#
-  #.P.XFE#
-  #......#
+  #S######
+  #P.W.FE#
   ########
 required_flowers: 1
