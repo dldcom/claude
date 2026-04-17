@@ -1,0 +1,9 @@
+id: "test-02"
+name: "물 한 방울"
+grid: |
+  #######
+  #S....#
+  #.P..E#
+  #R....#
+  #######
+required_flowers: 0
