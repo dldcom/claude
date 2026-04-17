@@ -27,8 +27,13 @@ export const RULES = {
   TRANSITION_MS: 500
 } as const;
 
-export const STATE_ORDER: WaterState[] = ['solid', 'liquid', 'gas'];
+export const STATE_ORDER: readonly WaterState[] = ['solid', 'liquid', 'gas'];
 
+/**
+ * 교과서 용어로 표현한 4가지 상태 변화 이름.
+ * `getTransitionPopup`이 반환하는 팝업의 title 앞부분과 대응한다.
+ * 새 전이를 추가하려면 이 유니온과 `getTransitionPopup`의 분기를 함께 업데이트할 것.
+ */
 export type TransitionName = '녹음' | '끓음' | '응결' | '얼음';
 
 export interface TransitionPopup {
