@@ -1,0 +1,23 @@
+{
+  "name": "ice-kingdom-cracks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0",
+    "vitest": "^1.5.0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "phaser": "^3.80.1"
+  }
+}
