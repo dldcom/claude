@@ -15,7 +15,7 @@ export class OrderBoard {
     this.scene = scene;
     this.cardX = x;
     this.cardY = y;
-    scene.add.image(x, y, 'order_card');
+    scene.add.image(x, y, 'order_card').setScale(8); // 32×32 Kenney tile → 256×256
     // 고객 영역 (상단)
     this.customerEmoji = scene.add.text(x, y - 100, '', { fontSize: '48px' }).setOrigin(0.5);
     this.customerName = scene.add.text(x, y - 60, '', {

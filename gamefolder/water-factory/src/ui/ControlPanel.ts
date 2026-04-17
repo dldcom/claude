@@ -23,6 +23,7 @@ export class ControlPanel {
 
   private makeButton(x: number, y: number, texture: string, label: string, onTap: () => void): Phaser.GameObjects.Container {
     const bg = this.scene.add.image(0, 0, texture)
+      .setScale(3.5) // 32×32 Kenney tile → 112×112 button
       .setInteractive({ useHandCursor: true });
     const txt = this.scene.add.text(0, 0, label, { fontSize: '40px' }).setOrigin(0.5);
     const c = this.scene.add.container(x, y, [bg, txt]);

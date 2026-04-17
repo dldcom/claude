@@ -1,0 +1,19 @@
+Water Factory - Asset License Credits
+
+Sprites sourced from Kenney.nl (https://kenney.nl)
+License: Creative Commons Zero (CC0 1.0 Universal)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+Packs used:
+- UI Pack - Pixel Adventure (https://kenney.nl/assets/ui-pack-pixel-adventure)
+  Used tiles: tile_0020 (btn_heat), tile_0021 (btn_ship), tile_0022 (btn_cool),
+              tile_0001 (order_card), tile_0002 (cauldron)
+  Tile size: 32×32 px, "Large tiles / Thick outline" variant
+
+- Procedural pixel-art sprites (generated via Node.js, CC0):
+  bg_wall.png  — 128×72 factory wall with metal panels, rivets, grime
+  ice.png      — 64×56  crystal ice block with facets and highlights
+  water.png    — 64×56  water blob with wave lines and foam
+  steam.png    — 64×72  wispy steam cloud puffs
+
+Attribution optional but appreciated: "Kenney.nl"

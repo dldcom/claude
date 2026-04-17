@@ -22,8 +22,8 @@ export class Cauldron {
 
   constructor(scene: Phaser.Scene, x: number, y: number, initialState: WaterState) {
     this.scene = scene;
-    this.cauldron = scene.add.image(x, y, 'cauldron');
-    this.contents = scene.add.image(x, y - 40, STATE_TEXTURE[initialState]);
+    this.cauldron = scene.add.image(x, y, 'cauldron').setScale(5.5); // 32×32 → ~176px
+    this.contents = scene.add.image(x, y - 40, STATE_TEXTURE[initialState]).setScale(1.8); // 64×56 → ~115×100
     this.stateLabel = scene.add.text(x, y + 120, STATE_LABEL[initialState], {
       fontSize: '28px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);

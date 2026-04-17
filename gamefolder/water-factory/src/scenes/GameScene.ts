@@ -19,7 +19,7 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.gameOverTriggered = false;
-    this.add.image(640, 360, 'bg_wall');
+    this.add.image(640, 360, 'bg_wall').setScale(10); // 128×72 → 1280×720
 
     this.gameState = new GameState();
     this.gameState.startNewOrder();
