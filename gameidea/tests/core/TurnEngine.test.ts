@@ -150,3 +150,59 @@ describe('TurnEngine.pour', () => {
     expect(s2.turnCount).toBe(0);
   });
 });
+
+describe('TurnEngine.freeze — basic expansion', () => {
+  it('freezes water into ice head + tail', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setObject(2, 2, { type: 'water' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 2 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 2 },
+      direction: 'right',
+    });
+    expect(s2.grid.getObject(2, 2)).toMatchObject({ type: 'ice', role: 'head' });
+    expect(s2.grid.getObject(3, 2)).toMatchObject({ type: 'ice', role: 'tail' });
+    const head = s2.grid.getObject(2, 2) as { groupId: number };
+    const tail = s2.grid.getObject(3, 2) as { groupId: number };
+    expect(head.groupId).toBe(tail.groupId);
+    expect(s2.turnCount).toBe(1);
+    expect(s2.nextIceGroupId).toBe(2);
+  });
+
+  it('fails when target is not water', () => {
+    const grid = Grid.createEmpty(5, 5);
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 2 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 2 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when player not adjacent to target water', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setObject(2, 2, { type: 'water' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 4, y: 4 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 2 },
+      direction: 'right',
+    });
+    expect(s2.grid.getObject(2, 2)).toEqual({ type: 'water' });
+    expect(s2.turnCount).toBe(0);
+  });
+});
