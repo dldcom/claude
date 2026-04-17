@@ -10,6 +10,7 @@ import { DIRECTION_DELTA } from '../core/types';
 import { TileRenderer } from '../entities/TileRenderer';
 import { PlayerRenderer } from '../entities/PlayerRenderer';
 import { HUD } from '../ui/HUD';
+import { showStageClearModal, showEndingScreen } from '../ui/StageClearModal';
 
 interface StageSceneData {
   levelIndex: number;
@@ -160,57 +161,18 @@ export class StageScene extends Phaser.Scene {
   }
 
   private onStageCleared(): void {
-    const w = Number(this.game.config.width);
-    const h = Number(this.game.config.height);
-
-    const overlay = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6);
-    overlay.setInteractive();
-
-    const title = this.add.text(w / 2, h / 2 - 60, '✨ 스테이지 클리어!', {
-      fontFamily: 'sans-serif',
-      fontSize: '36px',
-      color: '#ffffff',
-    });
-    title.setOrigin(0.5);
-
-    const turnInfo = this.add.text(w / 2, h / 2, `${this.state.turnCount} 턴`, {
-      fontFamily: 'sans-serif',
-      fontSize: '24px',
-      color: '#ffeaa7',
-    });
-    turnInfo.setOrigin(0.5);
-
     const isLast = this.levelIndex >= LEVEL_PLAYLIST.length - 1;
-    const btnLabel = isLast ? '🌈 엔딩 보기' : '➡ 다음 스테이지';
-    const nextBtn = this.add.text(w / 2, h / 2 + 60, btnLabel, {
-      fontFamily: 'sans-serif',
-      fontSize: '24px',
-      color: '#ffffff',
-      backgroundColor: '#2d7a99',
-      padding: { left: 24, right: 24, top: 12, bottom: 12 },
+    showStageClearModal(this, {
+      turnCount: this.state.turnCount,
+      isLast,
+      onNext: () => {
+        if (isLast) {
+          showEndingScreen(this);
+        } else {
+          this.scene.restart({ levelIndex: this.levelIndex + 1 });
+        }
+      },
     });
-    nextBtn.setOrigin(0.5);
-    nextBtn.setInteractive({ useHandCursor: true });
-    nextBtn.on('pointerdown', (e: Phaser.Input.Pointer) => {
-      e.event.stopPropagation();
-      if (isLast) {
-        this.showEnding();
-      } else {
-        this.scene.restart({ levelIndex: this.levelIndex + 1 });
-      }
-    });
-  }
-
-  private showEnding(): void {
-    const w = Number(this.game.config.width);
-    const h = Number(this.game.config.height);
-    this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.9);
-    this.add.text(w / 2, h / 2, '얼음왕국에 색이 돌아왔다.\n\n— MVP 끝 —', {
-      fontFamily: 'sans-serif',
-      fontSize: '28px',
-      color: '#ffffff',
-      align: 'center',
-    }).setOrigin(0.5);
   }
 
   private promptFreezeDirection(target: Position): void {

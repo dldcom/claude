@@ -12,6 +12,14 @@ interface GameStateInit {
 }
 
 export class GameState {
+  /**
+   * Immutable snapshot of a puzzle stage in progress.
+   *
+   * NOTE on `flowersCollected`: counts ONLY flowers marked required (`F` in YAML).
+   * Optional flowers (`f`) are removed from the grid when the player walks over them
+   * but are not tallied here. Win check uses `flowersCollected >= flowersRequired`.
+   * (Bonus/star tracking for optional flowers is a Phase 2 concern.)
+   */
   private constructor(
     public readonly grid: Grid,
     public readonly player: PlayerState,
