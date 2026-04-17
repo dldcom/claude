@@ -4,6 +4,7 @@ import { Cauldron } from '../entities/Cauldron';
 import { OrderBoard } from '../entities/OrderBoard';
 import { ControlPanel } from '../ui/ControlPanel';
 import { HUD } from '../ui/HUD';
+import { GameOverOverlay } from '../ui/GameOverOverlay';
 
 export class GameScene extends Phaser.Scene {
   private gameState!: GameState;
@@ -108,8 +109,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerGameOver(): void {
-    // Task 11에서 구현
-    console.log('GAME OVER', { score: this.gameState.score, completed: this.gameState.completedCount });
+    const redFlash = this.add.rectangle(640, 360, 1280, 720, 0xff0000, 0)
+      .setDepth(999);
+    this.tweens.add({
+      targets: redFlash,
+      alpha: { from: 0, to: 0.6 },
+      duration: 150,
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => {
+        redFlash.destroy();
+        this.showGameOverOverlay();
+      }
+    });
+  }
+
+  private showGameOverOverlay(): void {
+    const prevHigh = this.registry.get('highScore') as number;
+    const newHigh = Math.max(prevHigh, this.gameState.score);
+    const isNewRecord = this.gameState.score > prevHigh;
+    if (isNewRecord) {
+      this.registry.set('highScore', newHigh);
+      localStorage.setItem('waterFactory.highScore', String(newHigh));
+    }
+
+    new GameOverOverlay(this, {
+      score: this.gameState.score,
+      completedCount: this.gameState.completedCount,
+      highScore: newHigh,
+      newRecord: isNewRecord
+    }, () => this.scene.restart());
   }
 
   private refreshOrderView(): void {
