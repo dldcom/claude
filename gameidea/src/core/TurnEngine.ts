@@ -11,6 +11,8 @@ export function executeAction(state: GameState, action: ActionKind): GameState {
       return tryPour(state, action.target);
     case 'freeze':
       return tryFreeze(state, action.target, action.direction);
+    case 'melt':
+      return tryMelt(state, action.target);
     default:
       return state;
   }
@@ -140,4 +142,46 @@ function canExpandInto(state: GameState, pos: Position): boolean {
   if (state.player.position.x === pos.x && state.player.position.y === pos.y) return false;
   const obj = state.grid.getObject(pos.x, pos.y);
   return obj === null;
+}
+
+function tryMelt(state: GameState, target: Position): GameState {
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  if (!isAdjacent(state.player.position, target)) return state;
+  const obj = state.grid.getObject(target.x, target.y);
+  if (obj === null || obj.type !== 'ice') return state;
+  if (state.player.position.x === target.x && state.player.position.y === target.y) return state;
+
+  const groupId = obj.groupId;
+  const { headPos, tailPos } = findIceGroup(state, groupId);
+  if (!headPos || !tailPos) return state;
+
+  const pp = state.player.position;
+  if (pp.x === headPos.x && pp.y === headPos.y) return state;
+  if (pp.x === tailPos.x && pp.y === tailPos.y) return state;
+
+  const newGrid = state.grid.clone();
+  newGrid.setObject(headPos.x, headPos.y, { type: 'water' });
+  newGrid.setObject(tailPos.x, tailPos.y, null);
+  return state.withPatch({
+    grid: newGrid,
+    turnCount: state.turnCount + 1,
+  });
+}
+
+function findIceGroup(
+  state: GameState,
+  groupId: number,
+): { headPos: Position | null; tailPos: Position | null } {
+  let headPos: Position | null = null;
+  let tailPos: Position | null = null;
+  for (let y = 0; y < state.grid.height; y++) {
+    for (let x = 0; x < state.grid.width; x++) {
+      const o = state.grid.getObject(x, y);
+      if (o !== null && o.type === 'ice' && o.groupId === groupId) {
+        if (o.role === 'head') headPos = { x, y };
+        else tailPos = { x, y };
+      }
+    }
+  }
+  return { headPos, tailPos };
 }

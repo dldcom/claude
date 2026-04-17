@@ -313,3 +313,57 @@ describe('TurnEngine.freeze — edge cases', () => {
     expect(s2.turnCount).toBe(0);
   });
 });
+
+describe('TurnEngine.melt', () => {
+  function makeFrozenState(): GameState {
+    const grid = Grid.createEmpty(6, 3);
+    grid.setObject(2, 1, { type: 'ice', groupId: 7, role: 'head' });
+    grid.setObject(3, 1, { type: 'ice', groupId: 7, role: 'tail' });
+    return GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      nextIceGroupId: 8,
+    });
+  }
+
+  it('melting head turns head into water and tail into empty', () => {
+    const s1 = makeFrozenState();
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 2, y: 1 } });
+    expect(s2.grid.getObject(2, 1)).toEqual({ type: 'water' });
+    expect(s2.grid.getObject(3, 1)).toBeNull();
+    expect(s2.turnCount).toBe(1);
+  });
+
+  it('melting tail also turns head into water and tail into empty', () => {
+    const s1 = makeFrozenState().withPatch({
+      player: { position: { x: 4, y: 1 }, facing: 'left' },
+    });
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 3, y: 1 } });
+    expect(s2.grid.getObject(2, 1)).toEqual({ type: 'water' });
+    expect(s2.grid.getObject(3, 1)).toBeNull();
+  });
+
+  it('fails when not adjacent', () => {
+    const s1 = makeFrozenState().withPatch({
+      player: { position: { x: 5, y: 1 }, facing: 'left' },
+    });
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when target is not ice', () => {
+    const s1 = makeFrozenState();
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 0, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when player is standing on the ice being melted', () => {
+    const s1 = makeFrozenState().withPatch({
+      player: { position: { x: 2, y: 1 }, facing: 'right' },
+    });
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+    expect(s2.grid.getObject(2, 1)).toMatchObject({ type: 'ice' });
+  });
+});
