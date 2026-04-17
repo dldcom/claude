@@ -48,3 +48,67 @@ export function getTransitionPopup(from: WaterState, to: WaterState): Transition
   if (from === 'liquid' && to === 'solid')  return { title: '얼음 완성!',   subtitle: '물이 얼었어요' };
   return null;
 }
+
+export interface Customer {
+  id: string;
+  emoji: string;
+  name: string;
+  greetings: readonly string[];
+}
+
+export const CUSTOMERS: readonly Customer[] = [
+  {
+    id: 'grandma', emoji: '👵', name: '옆집 할머니',
+    greetings: ['아이고 시원한 거 없니~', '할머니 목 탄다야', '빠르게 부탁해~']
+  },
+  {
+    id: 'chef', emoji: '🧑‍🍳', name: '바쁜 요리사',
+    greetings: ['주방 바빠요! 빨리!', '주문 밀려있어요', '급해요 급해~']
+  },
+  {
+    id: 'kid', emoji: '👧', name: '신난 어린이',
+    greetings: ['우와 빨리빨리요!', '너무 더워요~', '맛있겠다!']
+  },
+  {
+    id: 'office', emoji: '🧑‍💼', name: '점심시간 직장인',
+    greetings: ['점심 시간이에요', '한 잔 부탁합니다', '짧게 부탁해요']
+  },
+  {
+    id: 'scientist', emoji: '🧑‍🔬', name: '호기심 과학자',
+    greetings: ['실험에 필요해요!', '오 상태 변화!', '재미있어요']
+  }
+] as const;
+
+export interface Rank {
+  id: string;
+  name: string;
+  icon: string;
+  minScore: number;
+}
+
+export const RANKS: readonly Rank[] = [
+  { id: 'newbie',  name: '신입 공장장',   icon: '🥉', minScore: 0    },
+  { id: 'skilled', name: '숙련 공장장',   icon: '🥈', minScore: 301  },
+  { id: 'master',  name: '달인 공장장',   icon: '🥇', minScore: 1001 },
+  { id: 'legend',  name: '전설의 공장장', icon: '💎', minScore: 2501 },
+  { id: 'myth',    name: '신화의 공장장', icon: '👑', minScore: 5001 }
+] as const;
+
+export function getRank(score: number): Rank {
+  let result = RANKS[0];
+  for (const r of RANKS) {
+    if (score >= r.minScore) result = r;
+  }
+  return result;
+}
+
+export function getNextRank(score: number): Rank | null {
+  for (const r of RANKS) {
+    if (score < r.minScore) return r;
+  }
+  return null;
+}
+
+export function getRankIndex(rank: Rank): number {
+  return RANKS.findIndex(r => r.id === rank.id);
+}

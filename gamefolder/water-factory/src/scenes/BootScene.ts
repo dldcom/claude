@@ -10,6 +10,8 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     const highScore = Number(localStorage.getItem('waterFactory.highScore') ?? 0);
     this.registry.set('highScore', highScore);
+    const bestRankIdx = Number(localStorage.getItem('waterFactory.bestRankIdx') ?? 0);
+    this.registry.set('bestRankIdx', bestRankIdx);
     this.registry.set('soundEnabled', false);
     this.scene.start('TitleScene');
   }

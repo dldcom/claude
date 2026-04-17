@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { getRank, getNextRank, getRankIndex, RANKS } from '../config';
 import { GameState } from '../state/GameState';
 import { Cauldron } from '../entities/Cauldron';
 import { OrderBoard } from '../entities/OrderBoard';
@@ -46,6 +47,7 @@ export class GameScene extends Phaser.Scene {
       this.registry.get('soundEnabled') as boolean
     );
     if (tick.timedOut) {
+      this.orderBoard.showReaction(false);
       this.onOrderFailed();
     }
   }
@@ -75,6 +77,7 @@ export class GameScene extends Phaser.Scene {
   private handleShip(): void {
     if (this.cauldron.animating) return;
     const result = this.gameState.ship();
+    this.orderBoard.showReaction(result.correct);
     if (result.correct) {
       this.onOrderCompleted();
     } else {
@@ -133,16 +136,31 @@ export class GameScene extends Phaser.Scene {
       localStorage.setItem('waterFactory.highScore', String(newHigh));
     }
 
+    const currentRank = getRank(this.gameState.score);
+    const nextRank = getNextRank(this.gameState.score);
+    const currentRankIdx = getRankIndex(currentRank);
+    const prevBestIdx = this.registry.get('bestRankIdx') as number;
+    const newBestRank = currentRankIdx > prevBestIdx;
+    const bestRankIdx = Math.max(prevBestIdx, currentRankIdx);
+    if (newBestRank) {
+      this.registry.set('bestRankIdx', bestRankIdx);
+      localStorage.setItem('waterFactory.bestRankIdx', String(bestRankIdx));
+    }
+
     new GameOverOverlay(this, {
       score: this.gameState.score,
       completedCount: this.gameState.completedCount,
       highScore: newHigh,
-      newRecord: isNewRecord
+      newRecord: isNewRecord,
+      currentRank,
+      nextRank,
+      bestRank: RANKS[bestRankIdx],
+      newBestRank
     }, () => this.scene.restart());
   }
 
   private refreshOrderView(): void {
-    this.orderBoard.setOrder(this.gameState.currentOrder);
+    this.orderBoard.setOrder(this.gameState.currentOrder, this.gameState.currentCustomer, this.gameState.currentGreeting);
   }
 
   private refreshControlsBoundaries(): void {

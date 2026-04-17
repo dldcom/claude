@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { RANKS } from '../config';
 
 interface Slide {
   title: string;
@@ -65,7 +66,9 @@ export class TitleScene extends Phaser.Scene {
       .on('pointerdown', () => this.startGame());
 
     const highScore = this.registry.get('highScore') as number;
-    this.add.text(640, 680, `🏆 최고 점수: ${highScore}`, {
+    const bestRankIdx = this.registry.get('bestRankIdx') as number;
+    const bestRank = RANKS[bestRankIdx];
+    this.add.text(640, 680, `🏆 최고 점수: ${highScore}   |   ${bestRank.icon} ${bestRank.name}`, {
       fontSize: '22px', color: '#ffffff'
     }).setOrigin(0.5);
 

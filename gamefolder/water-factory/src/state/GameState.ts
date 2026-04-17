@@ -1,4 +1,4 @@
-import { ORDERS, RULES, STATE_ORDER, type Order, type WaterState } from '../config';
+import { CUSTOMERS, ORDERS, RULES, STATE_ORDER, type Customer, type Order, type WaterState } from '../config';
 
 export type RandomFn = () => number;
 
@@ -7,6 +7,8 @@ export class GameState {
   lives: number = RULES.INITIAL_LIVES;
   currentOrder: Order | null = null;
   currentCauldronState: WaterState = 'liquid';
+  currentCustomer: Customer | null = null;
+  currentGreeting: string = '';
   remainingMs: number = RULES.INITIAL_TIME_MS;
   completedCount = 0;
   private readonly rng: RandomFn;
@@ -22,8 +24,13 @@ export class GameState {
   startNewOrder(): void {
     const orderIdx = Math.floor(this.rng() * ORDERS.length);
     const stateIdx = Math.floor(this.rng() * STATE_ORDER.length);
+    const custIdx = Math.floor(this.rng() * CUSTOMERS.length);
     this.currentOrder = ORDERS[orderIdx];
     this.currentCauldronState = STATE_ORDER[stateIdx];
+    this.currentCustomer = CUSTOMERS[custIdx];
+    const greetings = this.currentCustomer.greetings;
+    const greetIdx = Math.floor(this.rng() * greetings.length);
+    this.currentGreeting = greetings[greetIdx];
     this.remainingMs = this.computeTimeLimit();
   }
 

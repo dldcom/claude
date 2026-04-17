@@ -135,3 +135,13 @@ describe('applyHeat / applyCool', () => {
     expect(g.applyCool()).toBeNull();
   });
 });
+
+describe('currentCustomer', () => {
+  it('startNewOrder 호출 시 currentCustomer와 currentGreeting 설정됨', () => {
+    const g = new GameState(() => 0);
+    g.startNewOrder();
+    expect(g.currentCustomer).not.toBeNull();
+    expect(g.currentCustomer?.id).toBe('grandma');
+    expect(g.currentGreeting).toBe('아이고 시원한 거 없니~');
+  });
+});
