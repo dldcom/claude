@@ -4,10 +4,12 @@ import { SCENE_KEYS, LEVEL_PLAYLIST, TILE_SIZE } from '../config';
 import { loadLevelFromYaml } from '../core/LevelLoader';
 import { GameState } from '../core/GameState';
 import { executeAction } from '../core/TurnEngine';
+import { UndoStack } from '../core/UndoStack';
 import type { ActionKind, Direction, Position } from '../core/types';
 import { DIRECTION_DELTA } from '../core/types';
 import { TileRenderer } from '../entities/TileRenderer';
 import { PlayerRenderer } from '../entities/PlayerRenderer';
+import { HUD } from '../ui/HUD';
 
 interface StageSceneData {
   levelIndex: number;
@@ -15,9 +17,12 @@ interface StageSceneData {
 
 export class StageScene extends Phaser.Scene {
   private state!: GameState;
+  private initialState!: GameState;
   private levelIndex!: number;
   private tileRenderer!: TileRenderer;
   private playerRenderer!: PlayerRenderer;
+  private hud!: HUD;
+  private undoStack = new UndoStack();
   private originX = 0;
   private originY = 0;
   private freezeArrows: Phaser.GameObjects.GameObject[] = [];
@@ -28,12 +33,15 @@ export class StageScene extends Phaser.Scene {
 
   init(data: StageSceneData) {
     this.levelIndex = data.levelIndex;
+    this.undoStack = new UndoStack();
+    this.freezeArrows = [];
   }
 
   create() {
     const id = LEVEL_PLAYLIST[this.levelIndex];
     const yamlText = this.cache.text.get(`level:${id}`);
     this.state = loadLevelFromYaml(yamlText);
+    this.initialState = this.state;
 
     const mapW = this.state.grid.width * TILE_SIZE;
     const mapH = this.state.grid.height * TILE_SIZE;
@@ -43,6 +51,12 @@ export class StageScene extends Phaser.Scene {
     this.tileRenderer = new TileRenderer(this, this.originX, this.originY);
     this.playerRenderer = new PlayerRenderer(this, this.originX, this.originY);
     this.rerender();
+
+    this.hud = new HUD(this, {
+      onUndo: () => this.doUndo(),
+      onRestart: () => this.doRestart(),
+    });
+    this.updateHUD();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.handleTap(p));
   }
@@ -113,8 +127,40 @@ export class StageScene extends Phaser.Scene {
   private applyAction(action: ActionKind): void {
     const next = executeAction(this.state, action);
     if (next === this.state) return;
+    this.undoStack.push(this.state);
     this.state = next;
     this.rerender();
+    this.updateHUD();
+    if (this.state.isWon) this.onStageCleared();
+  }
+
+  private doUndo(): void {
+    const prev = this.undoStack.pop();
+    if (prev === null) return;
+    this.state = prev;
+    this.rerender();
+    this.updateHUD();
+  }
+
+  private doRestart(): void {
+    this.undoStack.clear();
+    this.state = this.initialState;
+    this.rerender();
+    this.updateHUD();
+  }
+
+  private updateHUD(): void {
+    const id = LEVEL_PLAYLIST[this.levelIndex];
+    this.hud.update({
+      levelId: id,
+      turnCount: this.state.turnCount,
+      flowersCollected: this.state.flowersCollected,
+      flowersRequired: this.state.flowersRequired,
+    });
+  }
+
+  private onStageCleared(): void {
+    console.log('Stage cleared! (Modal comes in Task 19)');
   }
 
   private promptFreezeDirection(target: Position): void {
