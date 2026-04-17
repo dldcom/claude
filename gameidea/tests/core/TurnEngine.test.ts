@@ -96,3 +96,57 @@ describe('TurnEngine.move — ice sliding', () => {
     expect(s2.player.position).toEqual({ x: 2, y: 1 });
   });
 });
+
+describe('TurnEngine.pour', () => {
+  it('pours water on empty floor adjacent to player, when player adjacent to spring', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setGround(1, 2, { type: 'spring' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 2 }, facing: 'down' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'pour', target: { x: 3, y: 2 } });
+    expect(s2.grid.getObject(3, 2)).toEqual({ type: 'water' });
+    expect(s2.turnCount).toBe(1);
+  });
+
+  it('fails when player not adjacent to spring', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setGround(0, 0, { type: 'spring' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 3, y: 3 }, facing: 'down' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'pour', target: { x: 4, y: 3 } });
+    expect(s2.grid.getObject(4, 3)).toBeNull();
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when target is not adjacent to player', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setGround(1, 2, { type: 'spring' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 2 }, facing: 'down' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'pour', target: { x: 4, y: 2 } });
+    expect(s2.grid.getObject(4, 2)).toBeNull();
+  });
+
+  it('fails when target is not empty floor', () => {
+    const grid = Grid.createEmpty(5, 5);
+    grid.setGround(1, 2, { type: 'spring' });
+    grid.setGround(3, 2, { type: 'wall' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 2 }, facing: 'down' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'pour', target: { x: 3, y: 2 } });
+    expect(s2.grid.getGround(3, 2)).toEqual({ type: 'wall' });
+    expect(s2.turnCount).toBe(0);
+  });
+});

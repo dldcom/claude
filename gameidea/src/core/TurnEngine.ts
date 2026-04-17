@@ -7,6 +7,8 @@ export function executeAction(state: GameState, action: ActionKind): GameState {
   switch (action.kind) {
     case 'move':
       return tryMove(state, action.direction);
+    case 'pour':
+      return tryPour(state, action.target);
     default:
       return state;
   }
@@ -28,6 +30,41 @@ function tryMove(state: GameState, direction: Direction): GameState {
     player: { position: cur, facing: direction },
     turnCount: state.turnCount + 1,
   });
+}
+
+function tryPour(state: GameState, target: Position): GameState {
+  if (!hasAdjacentSpring(state)) return state;
+  if (!isAdjacent(state.player.position, target)) return state;
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  const ground = state.grid.getGround(target.x, target.y);
+  if (ground.type !== 'floor') return state;
+  const obj = state.grid.getObject(target.x, target.y);
+  if (obj !== null) return state;
+
+  const newGrid = state.grid.clone();
+  newGrid.setObject(target.x, target.y, { type: 'water' });
+  return state.withPatch({
+    grid: newGrid,
+    turnCount: state.turnCount + 1,
+  });
+}
+
+function hasAdjacentSpring(state: GameState): boolean {
+  const { x, y } = state.player.position;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (state.grid.inBounds(nx, ny) && state.grid.getGround(nx, ny).type === 'spring') {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isAdjacent(a: Position, b: Position): boolean {
+  const dx = Math.abs(a.x - b.x);
+  const dy = Math.abs(a.y - b.y);
+  return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
 }
 
 function canEnter(grid: Grid, pos: Position): boolean {
