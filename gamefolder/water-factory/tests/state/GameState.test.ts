@@ -77,6 +77,14 @@ describe('tick / 시간초과', () => {
     g.tick(5_000);
     expect(g.lives).toBe(4);
   });
+
+  it('lives가 0이 되면 isGameOver() true', () => {
+    const g = new GameState(() => 0);
+    g.lives = 1;
+    g.startNewOrder();
+    g.tick(11_000);
+    expect(g.isGameOver()).toBe(true);
+  });
 });
 
 describe('ship', () => {
