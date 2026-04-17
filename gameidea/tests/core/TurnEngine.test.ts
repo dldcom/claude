@@ -206,3 +206,110 @@ describe('TurnEngine.freeze — basic expansion', () => {
     expect(s2.turnCount).toBe(0);
   });
 });
+
+describe('TurnEngine.freeze — edge cases', () => {
+  it('pushes a box one cell when freezing into box', () => {
+    const grid = Grid.createEmpty(6, 3);
+    grid.setObject(2, 1, { type: 'water' });
+    grid.setObject(3, 1, { type: 'box' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.grid.getObject(2, 1)).toMatchObject({ type: 'ice', role: 'head' });
+    expect(s2.grid.getObject(3, 1)).toMatchObject({ type: 'ice', role: 'tail' });
+    expect(s2.grid.getObject(4, 1)).toEqual({ type: 'box' });
+  });
+
+  it('fails to push box into wall', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setObject(1, 1, { type: 'water' });
+    grid.setObject(2, 1, { type: 'box' });
+    grid.setGround(3, 1, { type: 'wall' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 0, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 1, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+    expect(s2.grid.getObject(1, 1)).toEqual({ type: 'water' });
+  });
+
+  it('fails when expansion direction has rock', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'water' });
+    grid.setObject(3, 1, { type: 'rock' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when expansion direction has spring', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'water' });
+    grid.setGround(3, 1, { type: 'spring' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when expansion direction has player', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'water' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 3, y: 1 }, facing: 'left' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when expansion direction has another water', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'water' });
+    grid.setObject(3, 1, { type: 'water' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, {
+      kind: 'freeze',
+      target: { x: 2, y: 1 },
+      direction: 'right',
+    });
+    expect(s2.turnCount).toBe(0);
+  });
+});

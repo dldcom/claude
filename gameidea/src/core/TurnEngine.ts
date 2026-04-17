@@ -93,9 +93,18 @@ function tryFreeze(state: GameState, target: Position, direction: Direction): Ga
 
   const d = DIRECTION_DELTA[direction];
   const tailPos: Position = { x: target.x + d.dx, y: target.y + d.dy };
-  if (!canExpandInto(state, tailPos)) return state;
 
   const newGrid = state.grid.clone();
+  const boxPush = tryPlanBoxPush(state, tailPos, direction);
+  if (boxPush === 'reject') return state;
+  if (boxPush === 'none') {
+    if (!canExpandInto(state, tailPos)) return state;
+  } else {
+    const boxDest: Position = { x: tailPos.x + d.dx, y: tailPos.y + d.dy };
+    newGrid.setObject(boxDest.x, boxDest.y, { type: 'box' });
+    newGrid.setObject(tailPos.x, tailPos.y, null);
+  }
+
   const groupId = state.nextIceGroupId;
   newGrid.setObject(target.x, target.y, { type: 'ice', groupId, role: 'head' });
   newGrid.setObject(tailPos.x, tailPos.y, { type: 'ice', groupId, role: 'tail' });
@@ -105,6 +114,23 @@ function tryFreeze(state: GameState, target: Position, direction: Direction): Ga
     turnCount: state.turnCount + 1,
     nextIceGroupId: groupId + 1,
   });
+}
+
+type BoxPushResult = 'none' | 'push' | 'reject';
+
+function tryPlanBoxPush(state: GameState, tailPos: Position, direction: Direction): BoxPushResult {
+  if (!state.grid.inBounds(tailPos.x, tailPos.y)) return 'reject';
+  const obj = state.grid.getObject(tailPos.x, tailPos.y);
+  if (obj === null || obj.type !== 'box') return 'none';
+  const d = DIRECTION_DELTA[direction];
+  const dest: Position = { x: tailPos.x + d.dx, y: tailPos.y + d.dy };
+  if (!state.grid.inBounds(dest.x, dest.y)) return 'reject';
+  const destGround = state.grid.getGround(dest.x, dest.y);
+  if (destGround.type !== 'floor') return 'reject';
+  const destObj = state.grid.getObject(dest.x, dest.y);
+  if (destObj !== null) return 'reject';
+  if (state.player.position.x === dest.x && state.player.position.y === dest.y) return 'reject';
+  return 'push';
 }
 
 function canExpandInto(state: GameState, pos: Position): boolean {
