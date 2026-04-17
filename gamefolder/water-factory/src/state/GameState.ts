@@ -4,7 +4,7 @@ export type RandomFn = () => number;
 
 export class GameState {
   score = 0;
-  lives = RULES.INITIAL_LIVES;
+  lives: number = RULES.INITIAL_LIVES;
   currentOrder: Order | null = null;
   currentCauldronState: WaterState = 'liquid';
   remainingMs: number = RULES.INITIAL_TIME_MS;
