@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { GameScene } from './scenes/GameScene';
+import { mountOrientationGuard } from './ui/OrientationGuard';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -17,4 +18,5 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [BootScene, TitleScene, GameScene]
 };
 
+mountOrientationGuard();
 new Phaser.Game(config);
