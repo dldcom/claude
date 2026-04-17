@@ -7,7 +7,7 @@ export class GameState {
   lives = RULES.INITIAL_LIVES;
   currentOrder: Order | null = null;
   currentCauldronState: WaterState = 'liquid';
-  remainingMs = RULES.INITIAL_TIME_MS;
+  remainingMs: number = RULES.INITIAL_TIME_MS;
   completedCount = 0;
   private readonly rng: RandomFn;
 
