@@ -9,7 +9,7 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     for (const id of LEVEL_PLAYLIST) {
-      this.load.text(`level:${id}`, `src/assets/levels/${id}.yaml`);
+      this.load.text(`level:${id}`, `levels/${id}.yaml`);
     }
   }
 
