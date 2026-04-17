@@ -4,18 +4,29 @@ import { DIRECTION_DELTA } from './types';
 import { Grid } from './Grid';
 
 export function executeAction(state: GameState, action: ActionKind): GameState {
+  let next: GameState;
   switch (action.kind) {
     case 'move':
-      return tryMove(state, action.direction);
+      next = tryMove(state, action.direction);
+      break;
     case 'pour':
-      return tryPour(state, action.target);
+      next = tryPour(state, action.target);
+      break;
     case 'freeze':
-      return tryFreeze(state, action.target, action.direction);
+      next = tryFreeze(state, action.target, action.direction);
+      break;
     case 'melt':
-      return tryMelt(state, action.target);
+      next = tryMelt(state, action.target);
+      break;
     default:
       return state;
   }
+  if (next.turnCount === state.turnCount) return state;
+
+  next = collectFlowerAtPlayer(next);
+  next = applyBonfireAutoMelt(next);
+  next = checkWin(next);
+  return next;
 }
 
 function tryMove(state: GameState, direction: Direction): GameState {
@@ -184,4 +195,53 @@ function findIceGroup(
     }
   }
   return { headPos, tailPos };
+}
+
+function collectFlowerAtPlayer(state: GameState): GameState {
+  const { x, y } = state.player.position;
+  const obj = state.grid.getObject(x, y);
+  if (obj === null || obj.type !== 'flower' || obj.collected) return state;
+  const newGrid = state.grid.clone();
+  newGrid.setObject(x, y, null);
+  let collected = state.flowersCollected;
+  if (obj.required) collected += 1;
+  return state.withPatch({ grid: newGrid, flowersCollected: collected });
+}
+
+function applyBonfireAutoMelt(state: GameState): GameState {
+  const iceGroupsToMelt = new Set<number>();
+  for (let y = 0; y < state.grid.height; y++) {
+    for (let x = 0; x < state.grid.width; x++) {
+      if (state.grid.getGround(x, y).type !== 'bonfire') continue;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (!state.grid.inBounds(nx, ny)) continue;
+        const o = state.grid.getObject(nx, ny);
+        if (o !== null && o.type === 'ice') {
+          if (state.player.position.x === nx && state.player.position.y === ny) continue;
+          iceGroupsToMelt.add(o.groupId);
+        }
+      }
+    }
+  }
+  if (iceGroupsToMelt.size === 0) return state;
+  const newGrid = state.grid.clone();
+  for (const gid of iceGroupsToMelt) {
+    const { headPos, tailPos } = findIceGroup(state, gid);
+    if (!headPos || !tailPos) continue;
+    const pp = state.player.position;
+    if (pp.x === headPos.x && pp.y === headPos.y) continue;
+    if (pp.x === tailPos.x && pp.y === tailPos.y) continue;
+    newGrid.setObject(headPos.x, headPos.y, { type: 'water' });
+    newGrid.setObject(tailPos.x, tailPos.y, null);
+  }
+  return state.withPatch({ grid: newGrid });
+}
+
+function checkWin(state: GameState): GameState {
+  const { x, y } = state.player.position;
+  if (state.grid.getGround(x, y).type !== 'exit') return state;
+  if (state.flowersCollected < state.flowersRequired) return state;
+  return state.withPatch({ isWon: true });
 }

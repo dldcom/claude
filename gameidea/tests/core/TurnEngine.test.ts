@@ -367,3 +367,81 @@ describe('TurnEngine.melt', () => {
     expect(s2.grid.getObject(2, 1)).toMatchObject({ type: 'ice' });
   });
 });
+
+describe('TurnEngine.bonfire auto-melt', () => {
+  it('melts ice adjacent to bonfire after any action', () => {
+    const grid = Grid.createEmpty(6, 3);
+    grid.setGround(4, 1, { type: 'bonfire' });
+    grid.setObject(2, 1, { type: 'ice', groupId: 1, role: 'head' });
+    grid.setObject(3, 1, { type: 'ice', groupId: 1, role: 'tail' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 0, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      nextIceGroupId: 2,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.grid.getObject(2, 1)).toEqual({ type: 'water' });
+    expect(s2.grid.getObject(3, 1)).toBeNull();
+  });
+
+  it('does not melt ice that player stands on', () => {
+    const grid = Grid.createEmpty(6, 3);
+    grid.setGround(3, 1, { type: 'bonfire' });
+    grid.setObject(2, 1, { type: 'ice', groupId: 1, role: 'head' });
+    grid.setObject(1, 1, { type: 'ice', groupId: 2, role: 'head' });
+    grid.setObject(0, 1, { type: 'ice', groupId: 2, role: 'tail' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 1 }, facing: 'down' },
+      flowersRequired: 0,
+      nextIceGroupId: 3,
+    });
+    const s2 = executeAction(s1, { kind: 'melt', target: { x: 1, y: 1 } });
+    expect(s2.grid.getObject(2, 1)).toMatchObject({ type: 'ice' });
+  });
+});
+
+describe('TurnEngine — flower collection', () => {
+  it('collects flower when moving onto it', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, { type: 'flower', required: true, collected: false });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 1,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 2, y: 1 });
+    expect(s2.grid.getObject(2, 1)).toBeNull();
+    expect(s2.flowersCollected).toBe(1);
+  });
+});
+
+describe('TurnEngine — win condition', () => {
+  it('wins when player reaches exit with all required flowers', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(3, 1, { type: 'exit' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 1 }, facing: 'right' },
+      flowersRequired: 1,
+      flowersCollected: 1,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.isWon).toBe(true);
+  });
+
+  it('does not win when reaching exit without all flowers', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(3, 1, { type: 'exit' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 2, y: 1 }, facing: 'right' },
+      flowersRequired: 1,
+      flowersCollected: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.isWon).toBe(false);
+  });
+});
