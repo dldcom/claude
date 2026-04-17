@@ -1,0 +1,7 @@
+id: "test-01"
+name: "첫 걸음"
+grid: |
+  #####
+  #P.E#
+  #####
+required_flowers: 0
