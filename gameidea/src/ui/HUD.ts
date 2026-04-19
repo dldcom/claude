@@ -41,7 +41,7 @@ export class HUD {
     this.flowerText.setOrigin(0.5);
 
     this.makeButton(24, h - 48, '🔄 재시작', () => this.callbacks.onRestart());
-    this.meltBtn = this.makeButton(w / 2 - 80, h - 100, '🔥 녹이기 OFF', () =>
+    this.meltBtn = this.makeButton(w / 2 - 80, h - 100, '👣 이동 모드', () =>
       this.callbacks.onToggleMelt(),
     );
     this.makeButton(w - 140, h - 48, '↶ Undo', () => this.callbacks.onUndo());
@@ -64,7 +64,7 @@ export class HUD {
   }
 
   setMeltMode(active: boolean): void {
-    this.meltBtn.setText(active ? '🔥 녹이기 ON' : '🔥 녹이기 OFF');
+    this.meltBtn.setText(active ? '🔥 녹이기 모드' : '👣 이동 모드');
     this.meltBtn.setStyle({
       color: active ? '#ffd166' : '#ffffff',
       backgroundColor: active ? '#9a3324' : '#444444',
