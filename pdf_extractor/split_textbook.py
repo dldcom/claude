@@ -9,12 +9,13 @@ import fitz
 from pdf_handler import load_pdf, extract_page_range
 
 # 소단원명이 표시되는 알려진 폰트 패턴 (ToC용)
-TOC_FONTS = ["TTSpringSun", "OTChungchunsidaeL"]
+TOC_FONTS = ["TTSpringSun", "OTChungchunsidaeL", "12LotteMartDreamBold"]
 
 # 소단원 표지 페이지의 제목 폰트 패턴 (큰 글씨)
 TITLE_FONTS = {
-    "TTSpringSun": 30,       # 비상교육
+    "TTSpringSun": 30,             # 비상교육
     "ONEMobilePOPOTFRegular": 40,  # 천재교육
+    "12LotteMartDreamBold": 27,    # 아이스크림
 }
 
 # 소단원 표지 키워드 폴백
@@ -201,7 +202,14 @@ def _extract_title_from_page(page: fitz.Page) -> str | None:
                 if text and not text.isdigit():
                     parts.append(text)
     if parts:
-        return " ".join(parts)
+        # 같은 텍스트가 중복된 경우 제거 (순서 유지)
+        seen = set()
+        unique_parts = []
+        for p in parts:
+            if p not in seen:
+                seen.add(p)
+                unique_parts.append(p)
+        return " ".join(unique_parts)
     return None
 
 

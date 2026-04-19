@@ -6,4 +6,5 @@ pdfextractor/
 pdf_extractor/textbooks/*
 !pdf_extractor/textbooks/.gitkeep
 testmaker/input/아이스크림_사회4학년1학기/
+testmaker/output/*.json
 .worktrees/

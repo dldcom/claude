@@ -9,9 +9,9 @@ def validate_questions(questions: list[dict]) -> list[str]:
     """
     errors = []
 
-    # 1. 문제 수 검증
-    if len(questions) != 16:
-        errors.append(f"문제 수가 16개여야 하지만 {len(questions)}개입니다.")
+    # 1. 문제 수 검증 (1~16개 허용)
+    if not (1 <= len(questions) <= 16):
+        errors.append(f"문제 수는 1~16개여야 하지만 {len(questions)}개입니다.")
 
     # 2. type 유효성 검증
     valid_types = {"blank", "choice"}

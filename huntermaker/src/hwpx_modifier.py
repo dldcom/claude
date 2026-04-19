@@ -87,9 +87,16 @@ def create_hunter_worksheet(
     page_start: int,
     page_end: int,
 ) -> None:
-    """hunter_card.hwpx 템플릿을 수정하여 새 문제사냥놀이 카드를 생성한다."""
-    if len(questions) != 16:
-        raise ValueError(f"16개 문제가 필요하지만 {len(questions)}개가 전달되었습니다.")
+    """hunter_card.hwpx 템플릿을 수정하여 새 문제사냥놀이 카드를 생성한다.
+
+    questions가 16개보다 적으면 나머지 카드는 빈 텍스트로 채운다.
+    """
+    if not (1 <= len(questions) <= 16):
+        raise ValueError(f"문제는 1~16개여야 하지만 {len(questions)}개가 전달되었습니다.")
+
+    # 16개 미만이면 빈 카드로 패딩
+    padded = list(questions) + [{"question": "", "answer": ""}] * (16 - len(questions))
+    questions = padded
 
     # 템플릿 ZIP에서 파일 읽기
     with zipfile.ZipFile(template_path, "r") as zin:
