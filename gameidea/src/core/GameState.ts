@@ -1,5 +1,5 @@
 import { Grid } from './Grid';
-import type { PlayerState } from './types';
+import type { PlayerState, TankState } from './types';
 
 interface GameStateInit {
   grid: Grid;
@@ -9,6 +9,7 @@ interface GameStateInit {
   turnCount?: number;
   nextIceGroupId?: number;
   isWon?: boolean;
+  tanks?: Map<string, TankState>;
 }
 
 export class GameState {
@@ -28,6 +29,7 @@ export class GameState {
     public readonly turnCount: number,
     public readonly nextIceGroupId: number,
     public readonly isWon: boolean,
+    public readonly tanks: Map<string, TankState>,
   ) {}
 
   static create(init: GameStateInit): GameState {
@@ -39,6 +41,7 @@ export class GameState {
       init.turnCount ?? 0,
       init.nextIceGroupId ?? 1,
       init.isWon ?? false,
+      init.tanks ?? new Map(),
     );
   }
 
@@ -51,6 +54,7 @@ export class GameState {
       this.turnCount,
       this.nextIceGroupId,
       this.isWon,
+      new Map(this.tanks),
     );
   }
 
@@ -63,6 +67,7 @@ export class GameState {
       turnCount: patch.turnCount ?? this.turnCount,
       nextIceGroupId: patch.nextIceGroupId ?? this.nextIceGroupId,
       isWon: patch.isWon ?? this.isWon,
+      tanks: patch.tanks ?? this.tanks,
     });
   }
 }
