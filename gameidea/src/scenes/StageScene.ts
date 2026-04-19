@@ -105,8 +105,8 @@ export class StageScene extends Phaser.Scene {
         this.promptFreezeDirection(cell);
         return;
       }
-      if (obj === null && ground.type === 'floor' && this.playerIsNearSpring()) {
-        this.applyAction({ kind: 'pour', target: cell });
+      if (ground.type === 'spring') {
+        this.promptPourDirection();
         return;
       }
     }
@@ -124,16 +124,32 @@ export class StageScene extends Phaser.Scene {
     this.applyAction({ kind: 'move', direction });
   }
 
-  private playerIsNearSpring(): boolean {
-    const { x, y } = this.state.player.position;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const nx = x + dx;
-      const ny = y + dy;
-      if (this.state.grid.inBounds(nx, ny) && this.state.grid.getGround(nx, ny).type === 'spring') {
-        return true;
-      }
+  private promptPourDirection(): void {
+    this.clearFreezeArrows();
+    const p = this.state.player.position;
+    for (const dir of ['up', 'down', 'left', 'right'] as Direction[]) {
+      const d = DIRECTION_DELTA[dir];
+      const nx = p.x + d.dx;
+      const ny = p.y + d.dy;
+      if (!this.state.grid.inBounds(nx, ny)) continue;
+      if (this.state.grid.getGround(nx, ny).type !== 'floor') continue;
+      if (this.state.grid.getObject(nx, ny) !== null) continue;
+      const px = this.originX + nx * TILE_SIZE + TILE_SIZE / 2;
+      const py = this.originY + ny * TILE_SIZE + TILE_SIZE / 2;
+      const marker = this.add.text(px, py, '💧', {
+        fontFamily: 'sans-serif',
+        fontSize: '32px',
+        color: '#ffffff',
+      });
+      marker.setOrigin(0.5);
+      marker.setInteractive({ useHandCursor: true });
+      marker.on('pointerdown', (e: Phaser.Input.Pointer) => {
+        e.event.stopPropagation();
+        this.clearFreezeArrows();
+        this.applyAction({ kind: 'pour', target: { x: nx, y: ny } });
+      });
+      this.freezeArrows.push(marker);
     }
-    return false;
   }
 
   private applyAction(action: ActionKind): void {
