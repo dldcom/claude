@@ -1,0 +1,25 @@
+id: "ch2-05"
+name: "두 수조의 길"
+grid: |
+  ############
+  #S...T.....#
+  #P..G..G..E#
+  #T...S.....#
+  ############
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [1, 3]
+    threshold: 12
+  - id: "t2"
+    position: [5, 1]
+    threshold: 12
+gates:
+  - id: "g1"
+    position: [4, 2]
+    linkedTankIds: ["t1"]
+  - id: "g2"
+    position: [7, 2]
+    linkedTankIds: ["t2"]
+hints:
+  - "첫 번째 수조를 얼려 첫 번째 문을 열고, 두 번째 수조를 얼려 두 번째 문을 열어요."

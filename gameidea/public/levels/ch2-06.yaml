@@ -1,0 +1,19 @@
+id: "ch2-06"
+name: "모닥불 광장"
+grid: |
+  ############
+  #ST.......B#
+  #P..G.....E#
+  #..........#
+  ############
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 1]
+    threshold: 12
+gates:
+  - id: "g1"
+    position: [4, 2]
+    linkedTankIds: ["t1"]
+hints:
+  - "모닥불 근처는 따뜻해요. 수조를 얼려 문을 열고 빠르게 지나가요!"
