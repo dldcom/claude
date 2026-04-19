@@ -1,0 +1,17 @@
+id: "ch2-01"
+name: "첫 수조"
+grid: |
+  ########
+  #S.....#
+  #P.G..E#
+  #T.....#
+  ########
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [1, 3]
+    threshold: 12
+gates:
+  - id: "g1"
+    position: [3, 2]
+    linkedTankIds: ["t1"]
