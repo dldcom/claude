@@ -9,7 +9,7 @@ import type { ActionKind, Direction, Position } from '../core/types';
 import { DIRECTION_DELTA } from '../core/types';
 import { TileRenderer } from '../entities/TileRenderer';
 import { PlayerRenderer } from '../entities/PlayerRenderer';
-import { HUD } from '../ui/HUD';
+import { HUD, type PlayMode } from '../ui/HUD';
 import { showStageClearModal, showEndingScreen } from '../ui/StageClearModal';
 
 interface StageSceneData {
@@ -27,7 +27,7 @@ export class StageScene extends Phaser.Scene {
   private originX = 0;
   private originY = 0;
   private freezeArrows: Phaser.GameObjects.GameObject[] = [];
-  private meltMode = false;
+  private mode: PlayMode = 'move';
 
   constructor() {
     super(SCENE_KEYS.Stage);
@@ -37,7 +37,7 @@ export class StageScene extends Phaser.Scene {
     this.levelIndex = data.levelIndex;
     this.undoStack = new UndoStack();
     this.freezeArrows = [];
-    this.meltMode = false;
+    this.mode = 'move';
   }
 
   create() {
@@ -58,9 +58,9 @@ export class StageScene extends Phaser.Scene {
     this.hud = new HUD(this, {
       onUndo: () => this.doUndo(),
       onRestart: () => this.doRestart(),
-      onToggleMelt: () => this.toggleMelt(),
+      onSelectMode: (m) => this.selectMode(m),
     });
-    this.hud.setMeltMode(this.meltMode);
+    this.hud.setMode(this.mode);
     this.updateHUD();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.handleTap(p));
@@ -100,26 +100,25 @@ export class StageScene extends Phaser.Scene {
     const obj = this.state.grid.getObject(cell.x, cell.y);
     const ground = this.state.grid.getGround(cell.x, cell.y);
 
-    if (obj !== null && obj.type === 'water') {
-      this.promptFreezeDirection(cell);
-      return;
-    }
-    if (obj !== null && obj.type === 'ice') {
-      if (this.meltMode) {
-        this.applyAction({ kind: 'melt', target: cell });
-        this.meltMode = false;
-        this.hud.setMeltMode(false);
-      } else {
-        const direction: Direction =
-          dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
-        this.applyAction({ kind: 'move', direction });
+    if (this.mode === 'freeze') {
+      if (obj !== null && obj.type === 'water') {
+        this.promptFreezeDirection(cell);
+        return;
       }
-      return;
+      if (obj === null && ground.type === 'floor' && this.playerIsNearSpring()) {
+        this.applyAction({ kind: 'pour', target: cell });
+        return;
+      }
     }
-    if (obj === null && ground.type === 'floor' && this.playerIsNearSpring()) {
-      this.applyAction({ kind: 'pour', target: cell });
-      return;
+
+    if (this.mode === 'melt') {
+      if (obj !== null && obj.type === 'ice') {
+        this.applyAction({ kind: 'melt', target: cell });
+        return;
+      }
     }
+
+    // fall through: try move in all modes (move/freeze/melt)
     const direction: Direction =
       dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
     this.applyAction({ kind: 'move', direction });
@@ -158,15 +157,17 @@ export class StageScene extends Phaser.Scene {
   private doRestart(): void {
     this.undoStack.clear();
     this.state = this.initialState;
-    this.meltMode = false;
-    this.hud.setMeltMode(false);
+    this.mode = 'move';
+    this.hud.setMode('move');
+    this.clearFreezeArrows();
     this.rerender();
     this.updateHUD();
   }
 
-  private toggleMelt(): void {
-    this.meltMode = !this.meltMode;
-    this.hud.setMeltMode(this.meltMode);
+  private selectMode(m: PlayMode): void {
+    this.mode = m;
+    this.hud.setMode(m);
+    this.clearFreezeArrows();
   }
 
   private updateHUD(): void {
