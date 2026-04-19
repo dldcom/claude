@@ -23,7 +23,8 @@ export type ObjectType =
   | 'ice'
   | 'box'
   | 'rock'
-  | 'flower';
+  | 'flower'
+  | 'gate';
 
 export interface WaterObject {
   type: 'water';
@@ -49,12 +50,19 @@ export interface FlowerObject {
   collected: boolean;
 }
 
+export interface GateObject {
+  type: 'gate';
+  id: string;
+  linkedTankIds: readonly string[];
+}
+
 export type ObjectCell =
   | WaterObject
   | IceObject
   | BoxObject
   | RockObject
-  | FlowerObject;
+  | FlowerObject
+  | GateObject;
 
 export type ActionKind =
   | { kind: 'move'; direction: Direction }

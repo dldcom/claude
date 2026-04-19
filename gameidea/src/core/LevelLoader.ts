@@ -11,12 +11,19 @@ interface RawTank {
   thresholdPattern?: number[];
 }
 
+interface RawGate {
+  id: string;
+  position: [number, number];
+  linkedTankIds: string[];
+}
+
 interface RawLevel {
   id: string;
   name: string;
   grid: string;
   required_flowers: number;
   tanks?: RawTank[];
+  gates?: RawGate[];
 }
 
 const GROUND_CHARS: Record<string, GroundType> = {
@@ -32,6 +39,7 @@ const GROUND_CHARS: Record<string, GroundType> = {
   'R': 'floor',
   'F': 'floor',
   'f': 'floor',
+  'G': 'floor',
 };
 
 function parseObjectChar(ch: string): ObjectCell | null {
@@ -86,6 +94,14 @@ export function loadLevelFromYaml(text: string): GameState {
 
   if (player === null) {
     throw new Error('Invalid level: no player (P) found');
+  }
+
+  for (const rg of raw.gates ?? []) {
+    grid.setObject(rg.position[0], rg.position[1], {
+      type: 'gate',
+      id: rg.id,
+      linkedTankIds: [...rg.linkedTankIds],
+    });
   }
 
   const tanks = new Map<string, TankState>();

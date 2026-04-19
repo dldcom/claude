@@ -111,3 +111,32 @@ tanks:
     expect(s.tanks.get('t1')?.thresholdPattern).toEqual([10, 20, 15]);
   });
 });
+
+describe('LevelLoader — gates', () => {
+  it('parses gate object linked to tank', () => {
+    const yaml = `
+id: "g"
+name: "gate test"
+grid: |
+  #####
+  #PTG#
+  #####
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 1]
+    threshold: 10
+gates:
+  - id: "g1"
+    position: [3, 1]
+    linkedTankIds: ["t1"]
+`;
+    const s = loadLevelFromYaml(yaml);
+    const gate = s.grid.getObject(3, 1);
+    expect(gate?.type).toBe('gate');
+    if (gate?.type === 'gate') {
+      expect(gate.id).toBe('g1');
+      expect(gate.linkedTankIds).toEqual(['t1']);
+    }
+  });
+});
