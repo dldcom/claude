@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>얼음공주 & 불왕자 — 게임 인트로</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/galmuri.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Hahmlet:wght@300;400;600&display=swap">
+
+<style>
+/* ============ PIXEL ART GAME INTRO — SHARED STYLES ============ */
+
+@font-face {
+  font-family: 'DungGeunMoLegacy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.2/DungGeunMo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ICE PALETTE — muted dusty blues */
+  --ice-50:  #e6ebf0;
+  --ice-100: #c2ccd6;
+  --ice-200: #9aabb8;
+  --ice-300: #6d8294;
+  --ice-400: #4c6272;
+  --ice-500: #344454;
+  --ice-600: #232f3c;
+  --ice-700: #151d27;
+  --ice-mint: #b8c9c3;
+
+  /* FIRE PALETTE — muted rose / terracotta */
+  --fire-50:  #f2e6de;
+  --fire-100: #e6c8b5;
+  --fire-200: #d49e86;
+  --fire-300: #b87860;
+  --fire-400: #945646;
+  --fire-500: #6e3a2f;
+  --fire-600: #4a2721;
+  --fire-700: #2a1612;
+  --fire-gold: #d4b77c;
+
+  /* NEUTRALS — warm ink */
+  --night-900: #12121a;
+  --night-800: #1b1b26;
+  --night-700: #272732;
+  --parchment: #e8dfc9;
+
+  --pixel: 4px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: 'Galmuri11', 'Pretendard Variable', sans-serif;
+  overflow: hidden;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+img, canvas, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* ============ STAGE ============ */
+.stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.canvas-1080 {
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+  overflow: hidden;
+  transform-origin: center center;
+  background: var(--night-900);
+}
+
+/* ============ BUTTON / CHROME ============ */
+.pixel-btn {
+  font-family: inherit;
+  font-size: 28px;
+  padding: 18px 36px;
+  background: var(--ice-100);
+  color: var(--night-900);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  letter-spacing: 2px;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 4px #000,
+    inset 4px 4px 0 rgba(255,255,255,0.5),
+    inset -4px -4px 0 rgba(0,0,0,0.25);
+  transition: transform 80ms steps(2);
+}
+.pixel-btn:hover { transform: translateY(-4px); }
+.pixel-btn:active { transform: translateY(0); }
+
+/* ============ NAVIGATION ============ */
+.screen-nav {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(10,10,31,0.85);
+  border: 2px solid rgba(255,255,255,0.25);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+}
+.screen-nav button {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  background: transparent;
+  color: #ddd;
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.screen-nav button.active {
+  background: var(--ice-300);
+  color: var(--night-900);
+  border-color: #fff;
+}
+.screen-nav .sep { opacity: 0.35; padding: 0 4px; align-self: center; }
+.screen-nav .variant-toggle button.active { background: var(--fire-200); }
+
+/* ============ TWEAKS PANEL ============ */
+.tweaks-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  background: rgba(10,10,31,0.95);
+  border: 2px solid var(--ice-400);
+  color: #fff;
+  padding: 16px;
+  font-size: 13px;
+  z-index: 1001;
+  display: none;
+}
+.tweaks-panel.open { display: block; }
+.tweaks-panel h3 {
+  font-size: 18px;
+  color: var(--ice-200);
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid rgba(255,255,255,0.15);
+  padding-bottom: 8px;
+}
+.tweaks-panel .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tweaks-panel label { color: #ccc; letter-spacing: 1px; }
+.tweaks-panel input[type=range] { width: 120px; }
+.tweaks-panel select, .tweaks-panel input[type=text] {
+  background: var(--night-800);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes bob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-10px);} }
+@keyframes bobSlow { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-6px);} }
+@keyframes blink { 0%, 85% { opacity: 1;} 90%, 100% { opacity: 0.1;} }
+@keyframes flicker { 0%,100% { opacity: 1;} 45% { opacity: 0.85;} 48% { opacity: 1;} 92% { opacity: 0.6;} }
+@keyframes scanlines { 0% { background-position: 0 0;} 100% { background-position: 0 4px;} }
+@keyframes pressStart { 0%,49% { opacity: 1;} 50%,100% { opacity: 0;} }
+@keyframes snowfall { to { transform: translateY(1100px); } }
+@keyframes emberRise { to { transform: translateY(-1200px) translateX(var(--drift, 40px)); opacity: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmerText {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 12px var(--fire-gold)); }
+}
+@keyframes flameDance {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  25% { transform: scaleY(1.1) scaleX(0.95); }
+  50% { transform: scaleY(0.95) scaleX(1.05); }
+  75% { transform: scaleY(1.05) scaleX(0.98); }
+}
+@keyframes iceGlow {
+  0%, 100% { box-shadow: 0 0 20px var(--ice-200), inset 0 0 20px var(--ice-100); }
+  50% { box-shadow: 0 0 40px var(--ice-300), inset 0 0 30px var(--ice-50); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  10%, 30% { transform: scale(1.06); }
+  20% { transform: scale(0.98); }
+}
+@keyframes walk { 0%,100% { transform: translateX(0);} 50% { transform: translateX(2px);} }
+@keyframes sparkle { 0%,100% { opacity: 0; transform: scale(0.5);} 50% { opacity: 1; transform: scale(1);} }
+
+/* ============ CRT / SCANLINE OVERLAY ============ */
+.crt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 900;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.06) 0px,
+      rgba(0,0,0,0.06) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+}
+.crt-overlay.strong {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.12) 0px,
+      rgba(0,0,0,0.12) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 901;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.45) 100%);
+}
+
+/* ============ COMMON TEXT UTIL ============ */
+.pixel-text {
+  font-family: 'Galmuri11', 'Pretendard Variable', sans-serif;
+  letter-spacing: 1px;
+  text-rendering: geometricPrecision;
+}
+
+.shadow-hard {
+  text-shadow:
+    4px 4px 0 #000,
+    4px 0 0 #000,
+    0 4px 0 #000,
+    -4px 0 0 #000,
+    0 -4px 0 #000;
+}
+.shadow-med {
+  text-shadow:
+    2px 2px 0 #000,
+    2px 0 0 #000,
+    0 2px 0 #000,
+    -2px 0 0 #000,
+    0 -2px 0 #000;
+}
+
+</style>
+<style>
+  body, html { font-family: 'Galmuri11', 'Pretendard Variable', sans-serif; }
+
+  /* Variant-specific typography */
+  body.variant-A .pixel-text,
+  body.variant-A { font-family: 'Galmuri11', monospace; letter-spacing: 1px; }
+  body.variant-B .pixel-text,
+  body.variant-B {
+    font-family: 'Hahmlet', 'Pretendard Variable', sans-serif;
+    letter-spacing: -0.5px;
+    font-weight: 400;
+  }
+  body.variant-B .pixel-text[data-pixel="keep"] {
+    font-family: 'Galmuri9', 'Galmuri11', monospace;
+    font-weight: normal;
+    letter-spacing: 2px;
+  }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+// ==================== PIXEL SPRITES ====================
+// All characters rendered as SVG with pixel-perfect rects.
+// Each "pixel" is a rect. Style: cute chibi, 16x20 grid typically.
+
+// ---- Helper: convert 2D array to SVG rects ----
+function PixelGrid({ map, palette, scale = 8, className = '', style = {}, animated = null }) {
+  const rows = map.length;
+  const cols = map[0].length;
+  const rects = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const key = map[y][x];
+      if (key === '.' || key === ' ') continue;
+      const color = palette[key];
+      if (!color) continue;
+      rects.push(
+        <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={color} />
+      );
+    }
+  }
+  return (
+    <svg
+      width={cols * scale}
+      height={rows * scale}
+      viewBox={`0 0 ${cols} ${rows}`}
+      className={className}
+      style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges', ...style }}
+    >
+      {rects}
+    </svg>
+  );
+}
+
+// ===================== ICE PRINCESS =====================
+// 16 wide x 22 tall
+const ICE_PRINCESS_MAP = [
+  '................',
+  '.....22222......',
+  '....2111112.....',   // tiara
+  '...2133331332...',
+  '..21c1111111c12.',   // ice blue hair frame
+  '..2cc44444cc12..',   // face top
+  '..21444444412...',
+  '..2145444541.2..',   // eyes
+  '..2144944412...',    // nose
+  '..214444421....',
+  '..214333421....',   // mouth area
+  '...2bbbbbb2.....',
+  '..2b6666666b2...',   // dress collar (cyan)
+  '.2b66677666b2...',
+  '2b6777b7776b2...',   // dress body
+  '2b6777777776b2..',
+  '2b6667776666b2..',
+  '.2b66666666b2...',
+  '..2bbbbbbbb2....',
+  '...288..882.....',
+  '...288..882.....',
+  '...2222..2222...',
+];
+const ICE_PALETTE = {
+  '1': '#dcc8b0', // skin
+  '2': '#000',    // outline
+  '3': '#c9a960', // tiara gem
+  '4': '#ead5bd', // face light
+  '5': '#344454', // eyes ice blue
+  '6': '#c2ccd6', // dress light
+  '7': '#9aabb8', // dress mid
+  '8': '#6d8294', // shoes
+  '9': '#c59898', // cheeks
+  'a': '#fff',
+  'b': '#4c6272', // dress outline
+  'c': '#a8b6c2', // hair ice blue
+};
+
+// ===================== FIRE PRINCE =====================
+const FIRE_PRINCE_MAP = [
+  '................',
+  '....ff..ff......',   // flame hair tips
+  '...fff..fff.....',
+  '...33333333.....',   // red hair
+  '..2333333332....',
+  '..234444442.....',
+  '..23555554.2....',   // face
+  '..2355e5554.....',   // eyes fire
+  '..2344944432....',
+  '..2344443332....',   // nose/jaw
+  '..23333333.2....',
+  '..23ppppp32.....',   // mouth/chin dark
+  '..2cccccccc2....',   // cape collar gold
+  '.2c7788877c2....',   // chest armor
+  '2c78887888c2....',
+  '2c777p7777c2....',   // belt
+  '2c888e88888c2...',
+  '.2c88888888c2...',
+  '..2ccc..cccc2...',   // legs
+  '...2kk..kk2.....',
+  '...2kk..kk2.....',
+  '...2222..2222...',
+];
+const FIRE_PALETTE = {
+  '2': '#000',
+  '3': '#6e3a2f', // hair dark red
+  '4': '#d9bfa3', // skin
+  '5': '#e6cdb4', // face light
+  'e': '#4a2721', // eyes dark
+  '9': '#b87860', // nose highlight
+  'p': '#4a2721', // shadow
+  'c': '#d4b77c', // gold trim
+  '7': '#b87860', // fire orange
+  '8': '#945646', // fire red-orange
+  'k': '#4a2721', // boots dark
+  'f': '#cc8e72', // flame hair tip
+};
+
+// ===================== ENEMY: ICY WISP =====================
+const WISP_MAP = [
+  '........',
+  '..2222..',
+  '.211112.',
+  '2155512.',
+  '2111112.',
+  '2111112.',
+  '.211112.',
+  '..2222..',
+];
+const WISP_PALETTE = {
+  '1': '#c2ccd6',
+  '2': '#6d8294',
+  '5': '#344454',
+};
+
+// ===================== HEART =====================
+const HEART_MAP = [
+  '.22..22.',
+  '2112112.',
+  '2111112.',
+  '2111112.',
+  '.21112..',
+  '..212...',
+  '...2....',
+];
+const HEART_PALETTE = {
+  '1': '#b87860',
+  '2': '#4a2721',
+};
+
+// ===================== STAR =====================
+const STAR_MAP = [
+  '...22...',
+  '..2112..',
+  '.211112.',
+  '2211122.',
+  '.22.22..',
+  '.2...2..',
+];
+const STAR_PALETTE = { '1': '#d4b77c', '2': '#6e3a2f' };
+
+// ===================== CASTLE (simplified) =====================
+const ICE_CASTLE_MAP = [
+  '......2.....2.....2.....',
+  '.....212...212...212....',
+  '.....212...212...212....',
+  '....21112.21112.21112...',
+  '....21aa2.21aa2.21aa2...',
+  '....21aa222aa222aa12....',
+  '....2111111111111112....',
+  '....2166611666116612....',
+  '....2166611666116612....',
+  '....2111111111111112....',
+  '....21aaa1aaaa1aaa12....',
+  '....21aaa1aaaa1aaa12....',
+  '....2111111111111112....',
+  '....2222222222222222....',
+];
+const ICE_CASTLE_PALETTE = {
+  '1': '#c2ccd6',
+  '2': '#344454',
+  '6': '#4c6272',
+  'a': '#9aabb8',
+};
+
+const FIRE_CASTLE_MAP = [
+  '......2.....2.....2.....',
+  '.....2f2...2f2...2f2....',
+  '.....2f2...2f2...2f2....',
+  '....21112.21112.21112...',
+  '....21aa2.21aa2.21aa2...',
+  '....21aa222aa222aa12....',
+  '....2111111111111112....',
+  '....21eee1eeee1eee112...',
+  '....2133311333113331 ...',
+  '....2111111111111112....',
+  '....21aaa1aaaa1aaa12....',
+  '....21aaa1aaaa1aaa12....',
+  '....2111111111111112....',
+  '....2222222222222222....',
+];
+const FIRE_CASTLE_PALETTE = {
+  '1': '#b87860',
+  '2': '#2a1612',
+  'f': '#d4b77c',
+  'e': '#4a2721',
+  '3': '#6e3a2f',
+  'a': '#945646',
+};
+
+// ===================== COMPONENTS =====================
+function IcePrincess({ scale = 8, style = {}, animated = true }) {
+  return (
+    <div style={{ animation: animated ? 'bob 1.8s steps(4) infinite' : 'none', ...style }}>
+      <PixelGrid map={ICE_PRINCESS_MAP} palette={ICE_PALETTE} scale={scale} />
+    </div>
+  );
+}
+
+function FirePrince({ scale = 8, style = {}, animated = true }) {
+  return (
+    <div style={{ animation: animated ? 'bob 1.6s steps(4) infinite' : 'none', animationDelay: '-0.2s', ...style }}>
+      <PixelGrid map={FIRE_PRINCE_MAP} palette={FIRE_PALETTE} scale={scale} />
+    </div>
+  );
+}
+
+function IcyWisp({ scale = 6, style = {} }) {
+  return (
+    <div style={{ animation: 'bobSlow 2s steps(4) infinite', ...style }}>
+      <PixelGrid map={WISP_MAP} palette={WISP_PALETTE} scale={scale} />
+    </div>
+  );
+}
+
+function Heart({ scale = 4, style = {} }) {
+  return <PixelGrid map={HEART_MAP} palette={HEART_PALETTE} scale={scale} style={style} />;
+}
+
+function Star({ scale = 4, style = {} }) {
+  return <PixelGrid map={STAR_MAP} palette={STAR_PALETTE} scale={scale} style={style} />;
+}
+
+function IceCastle({ scale = 10, style = {} }) {
+  return <PixelGrid map={ICE_CASTLE_MAP} palette={ICE_CASTLE_PALETTE} scale={scale} style={style} />;
+}
+
+function FireCastle({ scale = 10, style = {} }) {
+  return <PixelGrid map={FIRE_CASTLE_MAP} palette={FIRE_CASTLE_PALETTE} scale={scale} style={style} />;
+}
+
+// ==================== PARTICLE SYSTEMS ====================
+function SnowField({ count = 60, area = { w: 1920, h: 1080 } }) {
+  const flakes = React.useMemo(() => Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    x: Math.random() * area.w,
+    size: 2 + Math.floor(Math.random() * 3) * 2,
+    delay: Math.random() * -8,
+    dur: 6 + Math.random() * 8,
+    drift: (Math.random() - 0.5) * 60,
+  })), [count, area.w]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {flakes.map(f => (
+        <div
+          key={f.id}
+          style={{
+            position: 'absolute',
+            left: f.x,
+            top: -20,
+            width: f.size,
+            height: f.size,
+            background: '#fff',
+            boxShadow: `0 0 4px #c2ccd6`,
+            animation: `snowfall ${f.dur}s linear infinite`,
+            animationDelay: `${f.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function EmberField({ count = 50, area = { w: 1920, h: 1080 } }) {
+  const embers = React.useMemo(() => Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    x: Math.random() * area.w,
+    size: 2 + Math.floor(Math.random() * 3) * 2,
+    delay: Math.random() * -10,
+    dur: 5 + Math.random() * 6,
+    drift: (Math.random() - 0.5) * 120 + 'px',
+    color: ['#b87860', '#d4b77c', '#945646', '#d49e86'][Math.floor(Math.random() * 4)],
+  })), [count, area.w]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {embers.map(e => (
+        <div
+          key={e.id}
+          style={{
+            position: 'absolute',
+            left: e.x,
+            bottom: -20,
+            width: e.size,
+            height: e.size,
+            background: e.color,
+            boxShadow: `0 0 6px ${e.color}`,
+            animation: `emberRise ${e.dur}s linear infinite`,
+            animationDelay: `${e.delay}s`,
+            ['--drift']: e.drift,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SparkleField({ count = 20, area = { w: 1920, h: 1080 } }) {
+  const sparkles = React.useMemo(() => Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    x: Math.random() * area.w,
+    y: Math.random() * area.h,
+    delay: Math.random() * 3,
+    size: 4 + Math.floor(Math.random() * 3) * 2,
+  })), [count]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      {sparkles.map(s => (
+        <div
+          key={s.id}
+          style={{
+            position: 'absolute',
+            left: s.x,
+            top: s.y,
+            width: s.size,
+            height: s.size,
+            background: '#fff',
+            boxShadow: `0 0 8px #fff, 0 0 12px #d4b77c`,
+            animation: `sparkle 2s steps(4) infinite`,
+            animationDelay: `${s.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Expose
+Object.assign(window, {
+  PixelGrid, IcePrincess, FirePrince, IcyWisp, Heart, Star,
+  IceCastle, FireCastle, SnowField, EmberField, SparkleField,
+});
+// ==================== SCREEN A1: TITLE LOGO (Retro CRT Style) ====================
+
+function TitleScreenA({ onStart }) {
+  const [showPress, setShowPress] = React.useState(true);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: 'linear-gradient(180deg, #151d27 0%, #1b1b26 50%, #2a1612 100%)',
+      overflow: 'hidden',
+    }}>
+      {/* Background: ice castle left, fire castle right */}
+      <div style={{ position: 'absolute', left: 80, bottom: 180, opacity: 0.85 }}>
+        <IceCastle scale={8} />
+      </div>
+      <div style={{ position: 'absolute', right: 80, bottom: 180, opacity: 0.85 }}>
+        <FireCastle scale={8} />
+      </div>
+
+      {/* Ground pixel line */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0, bottom: 80, height: 2,
+        background: 'rgba(194,204,214,0.25)',
+      }} />
+      <div style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, height: 80,
+        background: 'linear-gradient(180deg, #1b1b26, #000)',
+      }} />
+
+      {/* Snow + embers */}
+      <SnowField count={40} />
+      <EmberField count={40} />
+
+      {/* Subtitle top */}
+      <div className="pixel-text shadow-med" style={{
+        position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)',
+        color: '#d4b77c', fontSize: 28, letterSpacing: 8,
+      }}>
+        ★  2인용 아케이드 어드벤처  ★
+      </div>
+
+      {/* MAIN LOGO */}
+      <div style={{
+        position: 'absolute', top: 200, left: '50%', transform: 'translateX(-50%)',
+        textAlign: 'center', width: '100%',
+      }}>
+        <div className="pixel-text" style={{
+          fontSize: 180, lineHeight: 0.95, letterSpacing: 12,
+          fontWeight: 700,
+        }}>
+          <span style={{
+            background: 'linear-gradient(180deg, #e6ebf0 0%, #9aabb8 45%, #344454 46%, #232f3c 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: 'none',
+            filter: 'drop-shadow(6px 6px 0 #000) drop-shadow(0 0 30px #4c6272)',
+          }}>얼음공주</span>
+          <span style={{
+            display: 'inline-block',
+            margin: '0 24px',
+            color: '#d4b77c',
+            fontSize: 120,
+            verticalAlign: 'middle',
+            filter: 'drop-shadow(4px 4px 0 #000)',
+            animation: 'heartbeat 1.2s ease-in-out infinite',
+          }}>&</span>
+          <span style={{
+            background: 'linear-gradient(180deg, #f2e6de 0%, #d49e86 45%, #6e3a2f 46%, #2a1612 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(6px 6px 0 #000) drop-shadow(0 0 30px #945646)',
+          }}>불왕자</span>
+        </div>
+        <div className="pixel-text" style={{
+          marginTop: 32, fontSize: 48, color: '#fff',
+          letterSpacing: 20,
+          textShadow: '4px 4px 0 #000',
+        }}>
+          얼음과 불의 모험
+        </div>
+        <div className="pixel-text" style={{
+          marginTop: 16, fontSize: 22, color: '#c2ccd6',
+          letterSpacing: 6,
+          textShadow: '2px 2px 0 #000',
+        }}>
+          ─ THE ICE & FIRE QUEST ─
+        </div>
+      </div>
+
+      {/* Characters flanking the logo */}
+      <div style={{ position: 'absolute', left: 260, top: 580 }}>
+        <IcePrincess scale={10} />
+        {/* Ice glow under feet */}
+        <div style={{
+          position: 'absolute', left: -20, bottom: -30, width: 200, height: 20,
+          background: 'radial-gradient(ellipse, #9aabb8 0%, transparent 70%)',
+          animation: 'iceGlow 2s ease-in-out infinite',
+        }} />
+      </div>
+      <div style={{ position: 'absolute', right: 260, top: 580 }}>
+        <FirePrince scale={10} />
+        <div style={{
+          position: 'absolute', left: -20, bottom: -30, width: 200, height: 20,
+          background: 'radial-gradient(ellipse, #b87860 0%, transparent 70%)',
+          animation: 'iceGlow 1.5s ease-in-out infinite',
+        }} />
+      </div>
+
+      {/* PRESS START */}
+      <div
+        onClick={onStart}
+        className="pixel-text"
+        style={{
+          position: 'absolute', bottom: 180, left: '50%', transform: 'translateX(-50%)',
+          fontSize: 44, color: '#d4b77c', letterSpacing: 10, cursor: 'pointer',
+          animation: 'pressStart 1s steps(1) infinite',
+          textShadow: '4px 4px 0 #000, 0 0 20px #d4b77c',
+        }}
+      >
+        ▶  PRESS  SPACE  ◀
+      </div>
+
+      {/* Copyright-like footer */}
+      <div className="pixel-text" style={{
+        position: 'absolute', bottom: 30, left: 0, right: 0, textAlign: 'center',
+        fontSize: 16, color: '#888', letterSpacing: 4,
+      }}>
+        © 2026  PIXEL QUEST STUDIO    ─    VERSION 1.0.0    ─    CREDITS: ∞
+      </div>
+
+      {/* CRT overlay */}
+      <div className="crt-overlay strong" />
+      <div className="vignette" />
+    </div>
+  );
+}
+
+window.TitleScreenA = TitleScreenA;
+// ==================== SCREEN B1: TITLE LOGO (Cinematic Pixel Art) ====================
+
+function TitleScreenB({ onStart }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: 'linear-gradient(90deg, #151d27 0%, #344454 30%, #4a2721 70%, #2a1612 100%)',
+      overflow: 'hidden',
+    }}>
+      {/* Sky stars — ice side */}
+      <SparkleField count={30} area={{ w: 960, h: 600 }} />
+
+      {/* Dividing vertical beam of light in middle */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: '50%', width: 2,
+        background: 'linear-gradient(180deg, transparent, #fff, transparent)',
+        boxShadow: '0 0 40px 8px rgba(255,255,255,0.5)',
+        transform: 'translateX(-50%)',
+      }} />
+
+      {/* Left half: ICE KINGDOM */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: 0, width: '50%',
+        clipPath: 'polygon(0 0, 100% 0, calc(100% - 60px) 100%, 0 100%)',
+      }}>
+        {/* Mountains */}
+        <div style={{
+          position: 'absolute', bottom: 200, left: 0, right: 0, height: 400,
+          background: `
+            linear-gradient(135deg, transparent 49.5%, #4c6272 50%, #4c6272 50.5%, transparent 51%),
+            linear-gradient(-135deg, transparent 49.5%, #4c6272 50%, #4c6272 50.5%, transparent 51%)
+          `,
+          opacity: 0.3,
+        }} />
+        {/* Ice mountain shape using clip-path triangles */}
+        <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} viewBox="0 0 960 1080" preserveAspectRatio="none">
+          <polygon points="0,700 200,400 350,600 500,300 700,550 960,500 960,1080 0,1080" fill="#344454" />
+          <polygon points="0,800 200,500 350,700 500,400 700,650 960,600 960,1080 0,1080" fill="#4c6272" opacity="0.8" />
+          <polygon points="200,400 250,450 150,450" fill="#e6ebf0" />
+          <polygon points="500,300 560,380 440,380" fill="#e6ebf0" />
+        </svg>
+
+        <div style={{ position: 'absolute', bottom: 280, left: 220 }}>
+          <IceCastle scale={7} />
+        </div>
+
+        <SnowField count={50} area={{ w: 960, h: 1080 }} />
+      </div>
+
+      {/* Right half: FIRE KINGDOM */}
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%',
+        clipPath: 'polygon(60px 0, 100% 0, 100% 100%, 0 100%)',
+      }}>
+        <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} viewBox="0 0 960 1080" preserveAspectRatio="none">
+          <polygon points="0,500 260,550 450,300 600,600 760,400 960,700 960,1080 0,1080" fill="#4a2721" />
+          <polygon points="0,600 260,650 450,400 600,700 760,500 960,800 960,1080 0,1080" fill="#6e3a2f" opacity="0.8" />
+          <polygon points="450,300 510,380 390,380" fill="#d4b77c" />
+        </svg>
+
+        <div style={{ position: 'absolute', bottom: 280, right: 220 }}>
+          <FireCastle scale={7} />
+        </div>
+
+        <EmberField count={50} area={{ w: 960, h: 1080 }} />
+      </div>
+
+      {/* CENTER LOGO */}
+      <div style={{
+        position: 'absolute', top: 180, left: '50%', transform: 'translateX(-50%)',
+        textAlign: 'center', width: 1400,
+      }}>
+        <div className="pixel-text" style={{
+          fontSize: 36, color: '#e8dfc9', letterSpacing: 16, marginBottom: 32,
+          textShadow: '3px 3px 0 #000',
+        }}>
+          ·  A  PIXEL  TALE  ·
+        </div>
+
+        <div className="pixel-text" style={{
+          fontSize: 180, lineHeight: 0.9, letterSpacing: 24, fontWeight: 700,
+          color: '#fff',
+          textShadow: `
+            6px 0 0 #000, -6px 0 0 #000, 0 6px 0 #000, 0 -6px 0 #000,
+            6px 6px 0 #000, -6px -6px 0 #000, 6px -6px 0 #000, -6px 6px 0 #000,
+            12px 12px 0 #151d27, 24px 24px 0 #2a1612
+          `,
+        }}>
+          얼음 × 불
+        </div>
+
+        <div className="pixel-text" style={{
+          marginTop: 40, fontSize: 56, color: '#d4b77c', letterSpacing: 30,
+          textShadow: '5px 5px 0 #000',
+        }}>
+          왕국의 모험
+        </div>
+      </div>
+
+      {/* Characters — large center foreground */}
+      <div style={{
+        position: 'absolute', bottom: 100, left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex', gap: 80, alignItems: 'flex-end',
+      }}>
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            position: 'absolute', bottom: -20, left: 50, width: 260, height: 40,
+            background: 'radial-gradient(ellipse, #9aabb8 0%, transparent 70%)',
+            filter: 'blur(2px)',
+          }} />
+          <IcePrincess scale={14} />
+        </div>
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            position: 'absolute', bottom: -20, left: 50, width: 260, height: 40,
+            background: 'radial-gradient(ellipse, #b87860 0%, transparent 70%)',
+            filter: 'blur(2px)',
+          }} />
+          <FirePrince scale={14} />
+        </div>
+      </div>
+
+      {/* Press start - bottom */}
+      <div
+        onClick={onStart}
+        className="pixel-text"
+        style={{
+          position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
+          fontSize: 32, color: '#fff', letterSpacing: 8, cursor: 'pointer',
+          padding: '16px 48px',
+          border: '4px solid #fff',
+          background: 'rgba(0,0,0,0.5)',
+          animation: 'pressStart 1.2s steps(1) infinite',
+          textShadow: '3px 3px 0 #000',
+        }}
+      >
+        ▶  PRESS  START  ◀
+      </div>
+
+      <div className="crt-overlay" />
+      <div className="vignette" />
+    </div>
+  );
+}
+
+window.TitleScreenB = TitleScreenB;
+// ==================== MAIN MENU ====================
+
+function MainMenuScreen({ variant = 'A', onSelect }) {
+  const [hovered, setHovered] = React.useState(0);
+  const items = [
+    { key: 'start', label: '모험 시작', sub: 'START  GAME' },
+    { key: 'select', label: '캐릭터 선택', sub: 'CHARACTER' },
+    { key: 'ranking', label: '명예의 전당', sub: 'RANKING' },
+    { key: 'settings', label: '설정', sub: 'SETTINGS' },
+    { key: 'quit', label: '종료', sub: 'QUIT' },
+  ];
+
+  const isA = variant === 'A';
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: isA
+        ? 'linear-gradient(180deg, #151d27 0%, #272732 50%, #2a1612 100%)'
+        : 'linear-gradient(120deg, #232f3c 0%, #1b1b26 50%, #4a2721 100%)',
+      overflow: 'hidden',
+    }}>
+      <SnowField count={30} />
+      <EmberField count={30} />
+
+      {/* Header logo (smaller) */}
+      <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+        <div className="pixel-text" style={{ fontSize: 24, color: '#d4b77c', letterSpacing: 10, textShadow: '2px 2px 0 #000' }}>
+          ─  PIXEL QUEST  ─
+        </div>
+        <div className="pixel-text" style={{ fontSize: 72, letterSpacing: 4, marginTop: 12, whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#9aabb8', textShadow: '4px 4px 0 #000' }}>얼음공주</span>
+          <span style={{ color: '#d4b77c', margin: '0 16px', textShadow: '4px 4px 0 #000' }}>×</span>
+          <span style={{ color: '#b87860', textShadow: '4px 4px 0 #000' }}>불왕자</span>
+        </div>
+      </div>
+
+      {/* Characters on sides */}
+      <div style={{ position: 'absolute', left: 180, top: 460 }}>
+        <IcePrincess scale={12} />
+      </div>
+      <div style={{ position: 'absolute', right: 180, top: 460 }}>
+        <FirePrince scale={12} />
+      </div>
+
+      {/* Floating wisps */}
+      <div style={{ position: 'absolute', left: 120, top: 360 }}><IcyWisp scale={5} /></div>
+      <div style={{ position: 'absolute', right: 130, top: 380 }}>
+        <div style={{ animation: 'flameDance 0.5s steps(3) infinite' }}>
+          <div style={{ width: 24, height: 36, background: 'linear-gradient(180deg, #d4b77c 0%, #b87860 60%, #6e3a2f 100%)', clipPath: 'polygon(50% 0, 100% 60%, 80% 100%, 20% 100%, 0 60%)' }} />
+        </div>
+      </div>
+
+      {/* MENU */}
+      <div style={{
+        position: 'absolute', top: 380, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24,
+        minWidth: 720,
+      }}>
+        {items.map((item, i) => {
+          const active = hovered === i;
+          return (
+            <div
+              key={item.key}
+              onMouseEnter={() => setHovered(i)}
+              onClick={() => onSelect && onSelect(item.key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 24,
+                padding: '14px 40px',
+                minWidth: 680,
+                width: 680,
+                justifyContent: 'center',
+                whiteSpace: 'nowrap',
+                background: active ? 'rgba(255,223,107,0.15)' : 'transparent',
+                border: active ? '4px solid #d4b77c' : '4px solid transparent',
+                cursor: 'pointer',
+                transition: 'none',
+                position: 'relative',
+              }}
+            >
+              {active && (
+                <div className="pixel-text" style={{ position: 'absolute', left: 24, color: '#d4b77c', fontSize: 32, animation: 'blink 0.6s steps(1) infinite' }}>▶</div>
+              )}
+              <div className="pixel-text" style={{
+                fontSize: 40,
+                color: active ? '#fff' : '#c2ccd6',
+                letterSpacing: 3,
+                textShadow: active ? '4px 4px 0 #000, 0 0 20px #d4b77c' : '3px 3px 0 #000',
+              }}>
+                {item.label}
+              </div>
+              <div className="pixel-text" style={{
+                fontSize: 18,
+                color: active ? '#d4b77c' : '#666',
+                letterSpacing: 4,
+              }}>
+                {item.sub}
+              </div>
+              {active && (
+                <div className="pixel-text" style={{ position: 'absolute', right: 24, color: '#d4b77c', fontSize: 32, animation: 'blink 0.6s steps(1) infinite' }}>◀</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer hints */}
+      <div style={{
+        position: 'absolute', bottom: 40, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', gap: 48,
+        fontSize: 20, color: '#aaa', letterSpacing: 3,
+      }} className="pixel-text">
+        <span><span style={{ color: '#d4b77c' }}>[↑↓]</span> 선택</span>
+        <span><span style={{ color: '#d4b77c' }}>[ENTER]</span> 확인</span>
+        <span><span style={{ color: '#d4b77c' }}>[ESC]</span> 뒤로</span>
+      </div>
+
+      <div className={isA ? 'crt-overlay strong' : 'crt-overlay'} />
+      <div className="vignette" />
+    </div>
+  );
+}
+
+window.MainMenuScreen = MainMenuScreen;
+// ==================== CHARACTER SELECT ====================
+
+function CharSelectScreen({ variant = 'A' }) {
+  const [p1, setP1] = React.useState('ice');
+  const [p2, setP2] = React.useState('fire');
+  const isA = variant === 'A';
+
+  const iceStats = { name: '엘사벨', en: 'ELSABEL', hp: 3, atk: 4, spd: 5, skill: '얼음 폭풍', desc: '얼음 왕국의 후계자.\n냉기로 적을 얼린다.' };
+  const fireStats = { name: '플레이든', en: 'FLAYDEN', hp: 5, atk: 5, spd: 3, skill: '용염참', desc: '불 왕국의 전사.\n화염으로 길을 연다.' };
+
+  const StatBar = ({ label, val, color }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="pixel-text" style={{ width: 60, fontSize: 20, color: '#ddd', letterSpacing: 2 }}>{label}</div>
+      <div style={{ display: 'flex', gap: 3 }}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} style={{
+            width: 20, height: 20,
+            background: i < val ? color : '#222',
+            border: '2px solid #000',
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+
+  const CharCard = ({ side, data, color, selected, onSelect, player }) => (
+    <div
+      onClick={onSelect}
+      style={{
+        width: 680, height: 820,
+        background: selected
+          ? (side === 'ice' ? 'linear-gradient(180deg, rgba(52,68,84,0.45) 0%, rgba(21,29,39,0.9) 100%)' : 'linear-gradient(180deg, rgba(110,58,47,0.45) 0%, rgba(42,22,18,0.9) 100%)')
+          : 'rgba(18,18,26,0.6)',
+        border: `6px solid ${selected ? color : '#333'}`,
+        boxShadow: selected ? `0 0 0 4px #000, 0 0 40px ${color}` : '0 0 0 4px #000',
+        padding: 32,
+        position: 'relative',
+        cursor: 'pointer',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+      }}
+    >
+      {/* Player tag */}
+      <div className="pixel-text" style={{
+        position: 'absolute', top: -24, left: '50%', transform: 'translateX(-50%)',
+        background: color, color: '#000', padding: '4px 20px',
+        fontSize: 20, letterSpacing: 4, border: '4px solid #000',
+      }}>
+        PLAYER {player}
+      </div>
+
+      {/* Name */}
+      <div className="pixel-text" style={{ fontSize: 48, color: '#fff', letterSpacing: 2, textShadow: '4px 4px 0 #000', whiteSpace: 'nowrap' }}>
+        {data.name}
+      </div>
+      <div className="pixel-text" style={{ fontSize: 18, color: color, letterSpacing: 6, marginTop: 4 }}>
+        {data.en}
+      </div>
+
+      {/* Portrait frame */}
+      <div style={{
+        marginTop: 24, width: 320, height: 320,
+        background: side === 'ice' ? 'linear-gradient(180deg, #9aabb8 0%, #344454 100%)' : 'linear-gradient(180deg, #c59898 0%, #6e3a2f 100%)',
+        border: '6px solid #000',
+        display: 'grid', placeItems: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {side === 'ice' ? <SnowField count={20} area={{ w: 320, h: 320 }} /> : <EmberField count={20} area={{ w: 320, h: 320 }} />}
+        <div style={{ transform: 'scale(1.2)' }}>
+          {side === 'ice' ? <IcePrincess scale={14} /> : <FirePrince scale={14} />}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <StatBar label="HP" val={data.hp} color={color} />
+        <StatBar label="ATK" val={data.atk} color={color} />
+        <StatBar label="SPD" val={data.spd} color={color} />
+      </div>
+
+      {/* Skill */}
+      <div style={{ marginTop: 20, textAlign: 'center' }}>
+        <div className="pixel-text" style={{ fontSize: 16, color: '#888', letterSpacing: 3 }}>SPECIAL SKILL</div>
+        <div className="pixel-text" style={{ fontSize: 32, color: color, letterSpacing: 4, marginTop: 6, textShadow: '3px 3px 0 #000' }}>
+          ★ {data.skill} ★
+        </div>
+      </div>
+
+      {/* Description */}
+      <div className="pixel-text" style={{
+        marginTop: 16, fontSize: 18, color: '#ddd', letterSpacing: 1,
+        textAlign: 'center', lineHeight: 1.7, whiteSpace: 'pre-line',
+        wordBreak: 'keep-all',
+        maxWidth: 500,
+      }}>
+        {data.desc}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: isA
+        ? '#12121a'
+        : 'linear-gradient(90deg, #151d27, #1b1b26 50%, #2a1612)',
+    }}>
+      {/* Top banner */}
+      <div style={{ position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' }}>
+        <div className="pixel-text" style={{ fontSize: 24, color: '#d4b77c', letterSpacing: 12 }}>
+          ─ SELECT YOUR HERO ─
+        </div>
+        <div className="pixel-text" style={{ fontSize: 64, color: '#fff', letterSpacing: 8, marginTop: 8, textShadow: '5px 5px 0 #000' }}>
+          캐릭터 선택
+        </div>
+      </div>
+
+      {/* VS badge in middle */}
+      <div style={{
+        position: 'absolute', top: 520, left: '50%', transform: 'translate(-50%, -50%)',
+        zIndex: 10,
+      }}>
+        <div style={{
+          width: 160, height: 160, borderRadius: 0,
+          background: 'radial-gradient(circle, #c2a682 0%, #6e3a2f 70%, #1b1b26 100%)',
+          border: '3px solid #12121a',
+          display: 'grid', placeItems: 'center',
+          boxShadow: '0 0 0 2px #d4b77c, 0 0 30px rgba(212,183,124,0.25)',
+          animation: 'heartbeat 1.5s ease-in-out infinite',
+          transform: 'rotate(-5deg)',
+        }}>
+          <div className="pixel-text" style={{ fontSize: 72, color: '#fff', textShadow: '4px 4px 0 #000', letterSpacing: 2 }}>
+            &
+          </div>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div style={{
+        position: 'absolute', top: 160, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', gap: 80,
+      }}>
+        <CharCard side="ice" data={iceStats} color="#9aabb8" selected={p1 === 'ice'} onSelect={() => setP1('ice')} player="1" />
+        <CharCard side="fire" data={fireStats} color="#b87860" selected={p2 === 'fire'} onSelect={() => setP2('fire')} player="2" />
+      </div>
+
+      {/* Ready button */}
+      <div style={{
+        position: 'absolute', bottom: 50, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', gap: 32,
+      }}>
+        <div className="pixel-text" style={{
+          padding: '16px 48px', fontSize: 32, letterSpacing: 6,
+          background: 'rgba(212,183,124,0.9)', color: '#1b1b26', border: '2px solid #12121a',
+          boxShadow: '0 0 0 1px rgba(232,223,201,0.4), 6px 6px 0 rgba(0,0,0,0.5)',
+          cursor: 'pointer',
+          animation: 'pressStart 1s steps(1) infinite',
+        }}>
+          ▶ READY!
+        </div>
+      </div>
+
+      <div className={isA ? 'crt-overlay strong' : 'crt-overlay'} />
+      <div className="vignette" />
+    </div>
+  );
+}
+
+window.CharSelectScreen = CharSelectScreen;
+// ==================== STORY CUTSCENE ====================
+
+function StoryScreen({ variant = 'A' }) {
+  const [panel, setPanel] = React.useState(0);
+  const isA = variant === 'A';
+
+  const panels = [
+    {
+      title: '옛날 옛적에…',
+      text: '아주 먼 북쪽, 눈과 얼음으로 덮인 <b>수정 왕국</b>.\n그리고 남쪽 끝, 화산이 숨쉬는 <b>화염 왕국</b>.\n두 왕국은 오랜 시간 서로를 모른 채 살아왔다.',
+      bg: 'dual',
+    },
+    {
+      title: '어느 날, 하늘이…',
+      text: '별이 떨어지던 밤,\n두 왕국 사이에 <b>그림자의 탑</b>이 솟아올랐다.\n어둠이 얼음을 녹이고 불을 삼키기 시작했다.',
+      bg: 'dark',
+    },
+    {
+      title: '그리고 두 왕족이…',
+      text: '얼음 왕국의 공주 <b>엘사벨</b>과\n불 왕국의 왕자 <b>플레이든</b>.\n서로 다른 두 힘이 만나야만 탑을 무너뜨릴 수 있다.',
+      bg: 'meet',
+    },
+    {
+      title: '이제, 모험이 시작된다.',
+      text: '얼음과 불의 마음을 모아\n세상을 구해라!\n\n─ 준비됐나요? ─',
+      bg: 'adventure',
+    },
+  ];
+
+  const cur = panels[panel];
+
+  const Scene = () => {
+    if (cur.bg === 'dual') {
+      return (
+        <>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%', background: 'linear-gradient(180deg, #151d27, #344454)' }}>
+            <SnowField count={30} area={{ w: 960, h: 720 }} />
+            <div style={{ position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)' }}>
+              <IceCastle scale={8} />
+            </div>
+          </div>
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%', background: 'linear-gradient(180deg, #2a1612, #6e3a2f)' }}>
+            <EmberField count={30} area={{ w: 960, h: 720 }} />
+            <div style={{ position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)' }}>
+              <FireCastle scale={8} />
+            </div>
+          </div>
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 4, background: '#000', transform: 'translateX(-50%)' }} />
+        </>
+      );
+    }
+    if (cur.bg === 'dark') {
+      return (
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center top, #272732 0%, #000 70%)' }}>
+          {/* Shadow tower */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: 200, height: 600,
+            background: 'linear-gradient(180deg, #1b1b26 0%, #000 100%)',
+            border: '6px solid #2a1612',
+            boxShadow: '0 0 60px #6e3a2f inset, 0 0 80px #000',
+          }}>
+            {/* Glowing eye */}
+            <div style={{
+              position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)',
+              width: 40, height: 20, background: '#b87860',
+              boxShadow: '0 0 30px #b87860, 0 0 60px #6e3a2f',
+              animation: 'flicker 1.5s infinite',
+            }} />
+          </div>
+          {/* Lightning */}
+          <div style={{ position: 'absolute', top: 0, left: '30%', width: 8, height: 400, background: '#fff', clipPath: 'polygon(0 0, 100% 20%, 20% 50%, 100% 80%, 0 100%)', opacity: 0.7, animation: 'flicker 0.3s infinite' }} />
+          <SparkleField count={40} />
+        </div>
+      );
+    }
+    if (cur.bg === 'meet') {
+      return (
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #344454 0%, #6e3a2f 100%)' }}>
+          <SnowField count={30} area={{ w: 960, h: 720 }} />
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%' }}>
+            <EmberField count={30} area={{ w: 960, h: 720 }} />
+          </div>
+          <div style={{ position: 'absolute', bottom: 120, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 40, alignItems: 'flex-end' }}>
+            <IcePrincess scale={16} />
+            <FirePrince scale={16} />
+          </div>
+          {/* Handshake beam */}
+          <div style={{ position: 'absolute', bottom: 280, left: '50%', transform: 'translateX(-50%)', width: 200, height: 20, background: 'radial-gradient(ellipse, #d4b77c 0%, transparent 70%)' }} />
+        </div>
+      );
+    }
+    // adventure
+    return (
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #151d27 0%, #d4b77c 100%)' }}>
+        <SparkleField count={40} />
+        <div style={{ position: 'absolute', bottom: 100, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 40 }}>
+          <IcePrincess scale={14} />
+          <FirePrince scale={14} />
+        </div>
+        {/* Horizon path */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: 'linear-gradient(180deg, transparent, rgba(42,22,18,0.7))' }} />
+        <SnowField count={20} />
+        <EmberField count={20} />
+      </div>
+    );
+  };
+
+  const html = { __html: cur.text.replace(/<b>/g, '<b style="color:#d4b77c;text-shadow:3px 3px 0 #000">').replace(/\n/g, '<br/>') };
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: '#000' }}>
+      {/* Letterboxed scene */}
+      <div style={{ position: 'absolute', top: 60, left: 60, right: 60, height: 720, overflow: 'hidden', border: '6px solid #000', background: '#000' }}>
+        <Scene />
+        {/* Inner vignette */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%)' }} />
+      </div>
+
+      {/* Dialogue box */}
+      <div style={{
+        position: 'absolute', bottom: 50, left: 60, right: 60, height: 220,
+        background: 'linear-gradient(180deg, #151d27 0%, #1b1b26 100%)',
+        border: '6px solid #fff',
+        boxShadow: '0 0 0 4px #000, inset 0 0 0 4px #000',
+        padding: '24px 40px',
+        position: 'absolute',
+      }}>
+        {/* Speaker */}
+        <div className="pixel-text" style={{
+          position: 'absolute', top: -22, left: 32,
+          background: '#d4b77c', color: '#000', padding: '4px 20px',
+          fontSize: 22, letterSpacing: 4, border: '4px solid #000',
+        }}>
+          ★ NARRATOR ★
+        </div>
+
+        <div className="pixel-text" style={{ fontSize: 32, color: '#d4b77c', letterSpacing: 4, marginBottom: 16, textShadow: '3px 3px 0 #000' }}>
+          {cur.title}
+        </div>
+        <div className="pixel-text" style={{ fontSize: 28, color: '#fff', letterSpacing: 2, lineHeight: 1.6 }}
+          dangerouslySetInnerHTML={html} />
+
+        {/* Next arrow */}
+        <div style={{ position: 'absolute', bottom: 16, right: 32 }}>
+          <div className="pixel-text" style={{ fontSize: 28, color: '#d4b77c', animation: 'blink 0.8s steps(1) infinite' }}>▼</div>
+        </div>
+      </div>
+
+      {/* Panel dots */}
+      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 12 }}>
+        {panels.map((_, i) => (
+          <div key={i}
+            onClick={() => setPanel(i)}
+            style={{
+              width: 16, height: 16,
+              background: i === panel ? '#d4b77c' : '#333',
+              border: '3px solid #000',
+              cursor: 'pointer',
+            }} />
+        ))}
+      </div>
+
+      {/* Nav */}
+      <div style={{ position: 'absolute', top: 20, left: 80 }}>
+        <button onClick={() => setPanel(Math.max(0, panel - 1))} className="pixel-text" style={{
+          padding: '8px 20px', fontSize: 18, fontFamily: 'inherit', letterSpacing: 3,
+          background: '#151d27', color: '#fff', border: '3px solid #fff', cursor: 'pointer',
+        }}>◀ PREV</button>
+      </div>
+      <div style={{ position: 'absolute', top: 20, right: 80 }}>
+        <button onClick={() => setPanel(Math.min(panels.length - 1, panel + 1))} className="pixel-text" style={{
+          padding: '8px 20px', fontSize: 18, fontFamily: 'inherit', letterSpacing: 3,
+          background: '#2a1612', color: '#fff', border: '3px solid #fff', cursor: 'pointer',
+        }}>NEXT ▶</button>
+      </div>
+
+      <div className={isA ? 'crt-overlay strong' : 'crt-overlay'} />
+    </div>
+  );
+}
+
+window.StoryScreen = StoryScreen;
+// ==================== PRESS START (Boot / Attract) ====================
+
+function PressStartScreen({ variant = 'A' }) {
+  const [flash, setFlash] = React.useState(false);
+  const isA = variant === 'A';
+
+  React.useEffect(() => {
+    const id = setInterval(() => setFlash(f => !f), 500);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: isA ? '#000' : 'linear-gradient(180deg, #151d27 0%, #000 100%)',
+      overflow: 'hidden',
+    }}>
+      {/* Attract-mode pulsing rings */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 1200, height: 1200, borderRadius: '50%',
+        border: '3px solid rgba(143, 208, 255, 0.3)',
+        animation: 'heartbeat 2s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 900, height: 900, borderRadius: '50%',
+        border: '3px solid rgba(255, 111, 42, 0.3)',
+        animation: 'heartbeat 2s ease-in-out infinite',
+        animationDelay: '-0.5s',
+      }} />
+
+      {/* Background characters small and distant */}
+      <div style={{ position: 'absolute', left: 200, top: 180, opacity: 0.3 }}>
+        <IcePrincess scale={8} />
+      </div>
+      <div style={{ position: 'absolute', right: 200, top: 180, opacity: 0.3 }}>
+        <FirePrince scale={8} />
+      </div>
+
+      <SparkleField count={30} />
+
+      {/* Top banner */}
+      <div className="pixel-text" style={{
+        position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)',
+        fontSize: 22, color: '#888', letterSpacing: 8,
+      }}>
+        INSERT  COIN  TO  CONTINUE
+      </div>
+
+      {/* Logo */}
+      <div style={{ position: 'absolute', top: 260, left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+        <div className="pixel-text" style={{
+          fontSize: 120, lineHeight: 1, letterSpacing: 8,
+        }}>
+          <span style={{ color: '#9aabb8', textShadow: '6px 6px 0 #000, 0 0 30px #4c6272' }}>얼음공주</span>
+          <br />
+          <span style={{ color: '#d4b77c', fontSize: 60, margin: '16px 0', display: 'inline-block', textShadow: '4px 4px 0 #000' }}>×</span>
+          <br />
+          <span style={{ color: '#b87860', textShadow: '6px 6px 0 #000, 0 0 30px #945646' }}>불왕자</span>
+        </div>
+      </div>
+
+      {/* Giant Press Start */}
+      <div style={{
+        position: 'absolute', top: 680, left: '50%', transform: 'translateX(-50%)',
+        textAlign: 'center',
+      }}>
+        <div className="pixel-text" style={{
+          fontSize: 72, letterSpacing: 16,
+          color: flash ? '#d4b77c' : 'transparent',
+          WebkitTextStroke: flash ? '0' : '4px #d4b77c',
+          textShadow: flash ? '6px 6px 0 #000, 0 0 40px #d4b77c' : '6px 6px 0 #000',
+        }}>
+          PRESS  START
+        </div>
+        <div className="pixel-text" style={{
+          marginTop: 24, fontSize: 28, color: '#fff', letterSpacing: 8, textShadow: '3px 3px 0 #000',
+        }}>
+          ─  아무 키나 눌러주세요  ─
+        </div>
+      </div>
+
+      {/* High score strip */}
+      <div style={{
+        position: 'absolute', bottom: 120, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', gap: 80,
+        fontSize: 22, letterSpacing: 4,
+      }} className="pixel-text">
+        <div><span style={{ color: '#9aabb8' }}>HI-SCORE</span> <span style={{ color: '#fff' }}>001337</span></div>
+        <div><span style={{ color: '#d4b77c' }}>1UP</span> <span style={{ color: '#fff' }}>000000</span></div>
+        <div><span style={{ color: '#b87860' }}>2UP</span> <span style={{ color: '#fff' }}>000000</span></div>
+      </div>
+
+      {/* Credits */}
+      <div className="pixel-text" style={{
+        position: 'absolute', bottom: 40, left: 0, right: 0, textAlign: 'center',
+        fontSize: 18, color: '#666', letterSpacing: 3,
+      }}>
+        CREDIT 00    ─    ⓒ 2026 PIXEL QUEST STUDIO
+      </div>
+
+      <div className={isA ? 'crt-overlay strong' : 'crt-overlay'} />
+      <div className="vignette" />
+    </div>
+  );
+}
+
+window.PressStartScreen = PressStartScreen;
+</script>
+
+<script type="text/babel">
+// ================ TWEAK DEFAULTS ================
+const TWEAK_DEFAULS = /*EDITMODE-BEGIN*/{
+  "variant": "A",
+  "screen": "title",
+  "particles": 1,
+  "crtStrength": 1,
+  "showGrid": false
+}/*EDITMODE-END*/;
+
+// ============== STAGE (1920×1080 scaled) =================
+function Stage({ children }) {
+  const [scale, setScale] = React.useState(1);
+  React.useEffect(() => {
+    const fit = () => {
+      const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      setScale(s);
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+  return (
+    <div className="stage">
+      <div className="canvas-1080" style={{ transform: `scale(${scale})` }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ============== APP =================
+function App() {
+  const saved = (() => {
+    try { return JSON.parse(localStorage.getItem('gameIntroState') || '{}'); } catch { return {}; }
+  })();
+
+  const [variant, setVariant] = React.useState(saved.variant || TWEAK_DEFAULS.variant);
+  const [screen, setScreen] = React.useState(saved.screen || TWEAK_DEFAULS.screen);
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+  // Persist
+  React.useEffect(() => {
+    localStorage.setItem('gameIntroState', JSON.stringify({ variant, screen }));
+  }, [variant, screen]);
+
+  // Toggle body class so CSS can scope variant-specific fonts
+  React.useEffect(() => {
+    document.body.classList.toggle('variant-A', variant === 'A');
+    document.body.classList.toggle('variant-B', variant === 'B');
+  }, [variant]);
+
+  // Edit mode wiring
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === '1') setScreen('press');
+      else if (e.key === '2') setScreen('title');
+      else if (e.key === '3') setScreen('menu');
+      else if (e.key === '4') setScreen('select');
+      else if (e.key === '5') setScreen('story');
+      else if (e.key === 'a' || e.key === 'A') setVariant('A');
+      else if (e.key === 'b' || e.key === 'B') setVariant('B');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const screens = [
+    { key: 'press', label: '① Press Start' },
+    { key: 'title', label: '② 타이틀' },
+    { key: 'menu',  label: '③ 메인 메뉴' },
+    { key: 'select',label: '④ 캐릭터 선택' },
+    { key: 'story', label: '⑤ 스토리' },
+  ];
+
+  const renderScreen = () => {
+    if (screen === 'press')  return <PressStartScreen variant={variant} />;
+    if (screen === 'title' && variant === 'A') return <TitleScreenA onStart={() => setScreen('menu')} />;
+    if (screen === 'title' && variant === 'B') return <TitleScreenB onStart={() => setScreen('menu')} />;
+    if (screen === 'menu')   return <MainMenuScreen variant={variant} onSelect={(k) => { if (k === 'select') setScreen('select'); if (k === 'start') setScreen('story'); }} />;
+    if (screen === 'select') return <CharSelectScreen variant={variant} />;
+    if (screen === 'story')  return <StoryScreen variant={variant} />;
+    return null;
+  };
+
+  return (
+    <>
+      {/* Screen nav */}
+      <div className="screen-nav">
+        {screens.map(s => (
+          <button key={s.key} onClick={() => setScreen(s.key)} className={screen === s.key ? 'active' : ''}>
+            {s.label}
+          </button>
+        ))}
+        <span className="sep">│</span>
+        <div className="variant-toggle" style={{ display: 'flex', gap: 4 }}>
+          <button onClick={() => setVariant('A')} className={variant === 'A' ? 'active' : ''}>A · CRT 레트로</button>
+          <button onClick={() => setVariant('B')} className={variant === 'B' ? 'active' : ''}>B · 시네마틱</button>
+        </div>
+      </div>
+
+      <Stage>
+        {renderScreen()}
+      </Stage>
+
+      {/* Tweaks */}
+      {tweaksOpen && (
+        <div className="tweaks-panel open">
+          <h3>Tweaks</h3>
+          <div className="row">
+            <label>버전</label>
+            <select value={variant} onChange={e => setVariant(e.target.value)}>
+              <option value="A">A · CRT 레트로</option>
+              <option value="B">B · 시네마틱</option>
+            </select>
+          </div>
+          <div className="row">
+            <label>화면</label>
+            <select value={screen} onChange={e => setScreen(e.target.value)}>
+              {screens.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </div>
+          <div style={{ fontSize: 11, color: '#888', marginTop: 12, lineHeight: 1.6 }}>
+            ① ~ ⑤ 키: 화면 전환<br/>
+            A / B 키: 버전 전환
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+</body>
+</html>
