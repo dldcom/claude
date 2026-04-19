@@ -70,3 +70,44 @@ required_flowers: 0
     expect(() => loadLevelFromYaml(yaml)).toThrow();
   });
 });
+
+describe('LevelLoader — tanks', () => {
+  it('parses tank tile + tank definition', () => {
+    const yaml = `
+id: "t"
+name: "tank test"
+grid: |
+  ####
+  #PT#
+  ####
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 1]
+    threshold: 12
+`;
+    const s = loadLevelFromYaml(yaml);
+    expect(s.grid.getGround(2, 1)).toEqual({ type: 'tank' });
+    expect(s.tanks.get('t1')?.threshold).toBe(12);
+    expect(s.tanks.get('t1')?.contentType).toBe('empty');
+  });
+
+  it('parses tank with thresholdPattern', () => {
+    const yaml = `
+id: "t2"
+name: "moving sensor"
+grid: |
+  ####
+  #PT#
+  ####
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 1]
+    threshold: 10
+    thresholdPattern: [10, 20, 15]
+`;
+    const s = loadLevelFromYaml(yaml);
+    expect(s.tanks.get('t1')?.thresholdPattern).toEqual([10, 20, 15]);
+  });
+});

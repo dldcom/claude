@@ -1,17 +1,22 @@
 import yaml from 'js-yaml';
 import { Grid } from './Grid';
 import { GameState } from './GameState';
-import type {
-  GroundType,
-  ObjectCell,
-  PlayerState,
-} from './types';
+import { createEmptyTank } from './TankRules';
+import type { GroundType, ObjectCell, PlayerState, TankState } from './types';
+
+interface RawTank {
+  id: string;
+  position: [number, number];
+  threshold: number;
+  thresholdPattern?: number[];
+}
 
 interface RawLevel {
   id: string;
   name: string;
   grid: string;
   required_flowers: number;
+  tanks?: RawTank[];
 }
 
 const GROUND_CHARS: Record<string, GroundType> = {
@@ -20,6 +25,7 @@ const GROUND_CHARS: Record<string, GroundType> = {
   'S': 'spring',
   'B': 'bonfire',
   'E': 'exit',
+  'T': 'tank',
   'P': 'floor',
   'W': 'floor',
   'X': 'floor',
@@ -82,9 +88,21 @@ export function loadLevelFromYaml(text: string): GameState {
     throw new Error('Invalid level: no player (P) found');
   }
 
+  const tanks = new Map<string, TankState>();
+  for (const rt of raw.tanks ?? []) {
+    const tank = createEmptyTank({
+      id: rt.id,
+      position: { x: rt.position[0], y: rt.position[1] },
+      threshold: rt.threshold,
+      thresholdPattern: rt.thresholdPattern,
+    });
+    tanks.set(rt.id, tank);
+  }
+
   return GameState.create({
     grid,
     player,
     flowersRequired: raw.required_flowers ?? 0,
+    tanks,
   });
 }
