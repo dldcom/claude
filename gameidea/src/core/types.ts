@@ -68,7 +68,11 @@ export type ActionKind =
   | { kind: 'move'; direction: Direction }
   | { kind: 'pour'; target: Position }
   | { kind: 'freeze'; target: Position; direction: Direction }
-  | { kind: 'melt'; target: Position };
+  | { kind: 'melt'; target: Position }
+  | { kind: 'pourTank'; target: Position }
+  | { kind: 'freezeTank'; target: Position }
+  | { kind: 'meltTank'; target: Position }
+  | { kind: 'drainTank'; target: Position };
 
 export interface PlayerState {
   position: Position;

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Grid } from '../../src/core/Grid';
 import { GameState } from '../../src/core/GameState';
 import { executeAction } from '../../src/core/TurnEngine';
+import type { TankState } from '../../src/core/types';
 
 function makeState(width = 5, height = 5): GameState {
   const grid = Grid.createEmpty(width, height);
@@ -537,5 +538,69 @@ describe('TurnEngine.move — gates', () => {
     });
     const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
     expect(s2.player.position).toEqual({ x: 1, y: 1 });
+  });
+});
+
+describe('TurnEngine.pourTank', () => {
+  function makeState(tank: TankState, playerPos: { x: number; y: number }): GameState {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(tank.position.x, tank.position.y, { type: 'tank' });
+    grid.setGround(0, playerPos.y, { type: 'spring' });
+    return GameState.create({
+      grid,
+      player: { position: playerPos, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[tank.id, tank]]),
+    });
+  }
+
+  it('pours water into empty tank when player adjacent to both tank and spring', () => {
+    const tank: TankState = {
+      id: 't1', position: { x: 2, y: 1 },
+      contentType: 'empty', drops: 0, threshold: 12,
+    };
+    const s1 = makeState(tank, { x: 1, y: 1 });
+    const s2 = executeAction(s1, { kind: 'pourTank', target: { x: 2, y: 1 } });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('water');
+    expect(t.drops).toBe(1);
+    expect(s2.turnCount).toBe(1);
+  });
+
+  it('fails when tank not empty', () => {
+    const tank: TankState = {
+      id: 't1', position: { x: 2, y: 1 },
+      contentType: 'water', drops: 1, threshold: 12,
+    };
+    const s1 = makeState(tank, { x: 1, y: 1 });
+    const s2 = executeAction(s1, { kind: 'pourTank', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when player not adjacent to tank', () => {
+    const tank: TankState = {
+      id: 't1', position: { x: 3, y: 1 },
+      contentType: 'empty', drops: 0, threshold: 12,
+    };
+    const s1 = makeState(tank, { x: 1, y: 1 });
+    const s2 = executeAction(s1, { kind: 'pourTank', target: { x: 3, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('fails when player not adjacent to spring', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const tank: TankState = {
+      id: 't1', position: { x: 2, y: 1 },
+      contentType: 'empty', drops: 0, threshold: 12,
+    };
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([['t1', tank]]),
+    });
+    const s2 = executeAction(s1, { kind: 'pourTank', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
   });
 });

@@ -1,25 +1,20 @@
 import { GameState } from './GameState';
 import type { ActionKind, Direction, Position } from './types';
 import { DIRECTION_DELTA } from './types';
-import { computeVolume, computeThreshold } from './TankRules';
+import { computeVolume, computeThreshold, withContentType } from './TankRules';
 
 export function executeAction(state: GameState, action: ActionKind): GameState {
   let next: GameState;
   switch (action.kind) {
-    case 'move':
-      next = tryMove(state, action.direction);
-      break;
-    case 'pour':
-      next = tryPour(state, action.target);
-      break;
-    case 'freeze':
-      next = tryFreeze(state, action.target, action.direction);
-      break;
-    case 'melt':
-      next = tryMelt(state, action.target);
-      break;
-    default:
-      return state;
+    case 'move': next = tryMove(state, action.direction); break;
+    case 'pour': next = tryPour(state, action.target); break;
+    case 'freeze': next = tryFreeze(state, action.target, action.direction); break;
+    case 'melt': next = tryMelt(state, action.target); break;
+    case 'pourTank': next = tryPourTank(state, action.target); break;
+    case 'freezeTank': next = tryFreezeTank(state, action.target); break;
+    case 'meltTank': next = tryMeltTank(state, action.target); break;
+    case 'drainTank': next = tryDrainTank(state, action.target); break;
+    default: return state;
   }
   if (next.turnCount === state.turnCount) return state;
 
@@ -263,3 +258,33 @@ function checkWin(state: GameState): GameState {
   if (state.flowersCollected < state.flowersRequired) return state;
   return state.withPatch({ isWon: true });
 }
+
+function findTankIdAt(state: GameState, pos: Position): string | null {
+  for (const [id, tank] of state.tanks) {
+    if (tank.position.x === pos.x && tank.position.y === pos.y) return id;
+  }
+  return null;
+}
+
+function tryPourTank(state: GameState, target: Position): GameState {
+  if (!isAdjacent(state.player.position, target)) return state;
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  if (state.grid.getGround(target.x, target.y).type !== 'tank') return state;
+  const tankId = findTankIdAt(state, target);
+  if (tankId === null) return state;
+  const tank = state.tanks.get(tankId)!;
+  if (tank.contentType !== 'empty') return state;
+  if (!hasAdjacentSpring(state)) return state;
+
+  const newTanks = new Map(state.tanks);
+  newTanks.set(tankId, withContentType(tank, 'water', 1));
+  return state.withPatch({
+    tanks: newTanks,
+    turnCount: state.turnCount + 1,
+  });
+}
+
+// Stubs for future tasks (so switch is exhaustive)
+function tryFreezeTank(state: GameState, _target: Position): GameState { return state; }
+function tryMeltTank(state: GameState, _target: Position): GameState { return state; }
+function tryDrainTank(state: GameState, _target: Position): GameState { return state; }
