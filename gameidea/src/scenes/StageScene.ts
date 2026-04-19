@@ -27,7 +27,7 @@ export class StageScene extends Phaser.Scene {
   private originX = 0;
   private originY = 0;
   private freezeArrows: Phaser.GameObjects.GameObject[] = [];
-  private mode: PlayMode = 'move';
+  private mode: PlayMode = 'play';
 
   constructor() {
     super(SCENE_KEYS.Stage);
@@ -37,7 +37,7 @@ export class StageScene extends Phaser.Scene {
     this.levelIndex = data.levelIndex;
     this.undoStack = new UndoStack();
     this.freezeArrows = [];
-    this.mode = 'move';
+    this.mode = 'play';
   }
 
   create() {
@@ -100,7 +100,7 @@ export class StageScene extends Phaser.Scene {
     const obj = this.state.grid.getObject(cell.x, cell.y);
     const ground = this.state.grid.getGround(cell.x, cell.y);
 
-    if (this.mode === 'freeze') {
+    if (this.mode === 'play') {
       if (obj !== null && obj.type === 'water') {
         this.promptFreezeDirection(cell);
         return;
@@ -118,7 +118,7 @@ export class StageScene extends Phaser.Scene {
       }
     }
 
-    // fall through: try move in all modes (move/freeze/melt)
+    // fall through: try move
     const direction: Direction =
       dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
     this.applyAction({ kind: 'move', direction });
@@ -157,8 +157,8 @@ export class StageScene extends Phaser.Scene {
   private doRestart(): void {
     this.undoStack.clear();
     this.state = this.initialState;
-    this.mode = 'move';
-    this.hud.setMode('move');
+    this.mode = 'play';
+    this.hud.setMode('play');
     this.clearFreezeArrows();
     this.rerender();
     this.updateHUD();

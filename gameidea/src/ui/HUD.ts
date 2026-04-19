@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-export type PlayMode = 'move' | 'freeze' | 'melt';
+export type PlayMode = 'play' | 'melt';
 
 export interface HUDCallbacks {
   onUndo: () => void;
@@ -9,14 +9,12 @@ export interface HUDCallbacks {
 }
 
 const MODE_COLORS: Record<PlayMode, { fg: string; bg: string }> = {
-  move: { fg: '#ffffff', bg: '#3a6b52' },
-  freeze: { fg: '#ffffff', bg: '#3a6bb0' },
+  play: { fg: '#ffffff', bg: '#3a6bb0' },
   melt: { fg: '#ffd166', bg: '#9a3324' },
 };
 
 const MODE_LABELS: Record<PlayMode, string> = {
-  move: '👣 이동',
-  freeze: '🧊 얼리기',
+  play: '👣🧊 이동·얼리기',
   melt: '🔥 녹이기',
 };
 
@@ -60,13 +58,10 @@ export class HUD {
     this.makeButton(w - 140, h - 48, '↶ Undo', () => this.callbacks.onUndo());
 
     this.modeBtns = {
-      move: this.makeButton(w / 2 - 220, h - 100, MODE_LABELS.move, () =>
-        this.callbacks.onSelectMode('move'),
+      play: this.makeButton(w / 2 - 180, h - 100, MODE_LABELS.play, () =>
+        this.callbacks.onSelectMode('play'),
       ),
-      freeze: this.makeButton(w / 2 - 60, h - 100, MODE_LABELS.freeze, () =>
-        this.callbacks.onSelectMode('freeze'),
-      ),
-      melt: this.makeButton(w / 2 + 110, h - 100, MODE_LABELS.melt, () =>
+      melt: this.makeButton(w / 2 + 40, h - 100, MODE_LABELS.melt, () =>
         this.callbacks.onSelectMode('melt'),
       ),
     };
@@ -89,7 +84,7 @@ export class HUD {
   }
 
   setMode(active: PlayMode): void {
-    for (const mode of ['move', 'freeze', 'melt'] as PlayMode[]) {
+    for (const mode of ['play', 'melt'] as PlayMode[]) {
       const btn = this.modeBtns[mode];
       const isActive = mode === active;
       const palette = MODE_COLORS[mode];
