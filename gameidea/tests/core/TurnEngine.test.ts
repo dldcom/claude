@@ -677,6 +677,45 @@ describe('TurnEngine.meltTank', () => {
   });
 });
 
+describe('TurnEngine — bonfire auto-melt tank', () => {
+  it('melts ice tank adjacent to bonfire after turn', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    grid.setGround(3, 1, { type: 'bonfire' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 0, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'ice' as const, drops: 1, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('water');
+    expect(t.drops).toBe(1);
+  });
+
+  it('does not affect water or empty tanks', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    grid.setGround(3, 1, { type: 'bonfire' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 0, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'water' as const, drops: 1, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('water');
+  });
+});
+
 describe('TurnEngine.drainTank', () => {
   it('drains water tank to empty', () => {
     const grid = Grid.createEmpty(4, 3);

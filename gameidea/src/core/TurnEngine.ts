@@ -222,7 +222,11 @@ function collectFlowerAtPlayer(state: GameState): GameState {
 }
 
 function applyBonfireAutoMelt(state: GameState): GameState {
+  // Pass 1: grid ice groups
   const iceGroupsToMelt = new Set<number>();
+  // Pass 2: tanks
+  const tanksToMelt: string[] = [];
+
   for (let y = 0; y < state.grid.height; y++) {
     for (let x = 0; x < state.grid.width; x++) {
       if (state.grid.getGround(x, y).type !== 'bonfire') continue;
@@ -230,26 +234,52 @@ function applyBonfireAutoMelt(state: GameState): GameState {
         const nx = x + dx;
         const ny = y + dy;
         if (!state.grid.inBounds(nx, ny)) continue;
+        // Grid ice
         const o = state.grid.getObject(nx, ny);
         if (o !== null && o.type === 'ice') {
           if (state.player.position.x === nx && state.player.position.y === ny) continue;
           iceGroupsToMelt.add(o.groupId);
         }
+        // Tank ice
+        if (state.grid.getGround(nx, ny).type === 'tank') {
+          const tankId = findTankIdAt(state, { x: nx, y: ny });
+          if (tankId !== null) {
+            const tank = state.tanks.get(tankId)!;
+            if (tank.contentType === 'ice') {
+              tanksToMelt.push(tankId);
+            }
+          }
+        }
       }
     }
   }
-  if (iceGroupsToMelt.size === 0) return state;
-  const newGrid = state.grid.clone();
-  for (const gid of iceGroupsToMelt) {
-    const { headPos, tailPos } = findIceGroup(state, gid);
-    if (!headPos || !tailPos) continue;
-    const pp = state.player.position;
-    if (pp.x === headPos.x && pp.y === headPos.y) continue;
-    if (pp.x === tailPos.x && pp.y === tailPos.y) continue;
-    newGrid.setObject(headPos.x, headPos.y, { type: 'water' });
-    newGrid.setObject(tailPos.x, tailPos.y, null);
+
+  let newState = state;
+
+  if (iceGroupsToMelt.size > 0) {
+    const newGrid = state.grid.clone();
+    for (const gid of iceGroupsToMelt) {
+      const { headPos, tailPos } = findIceGroup(state, gid);
+      if (!headPos || !tailPos) continue;
+      const pp = state.player.position;
+      if (pp.x === headPos.x && pp.y === headPos.y) continue;
+      if (pp.x === tailPos.x && pp.y === tailPos.y) continue;
+      newGrid.setObject(headPos.x, headPos.y, { type: 'water' });
+      newGrid.setObject(tailPos.x, tailPos.y, null);
+    }
+    newState = newState.withPatch({ grid: newGrid });
   }
-  return state.withPatch({ grid: newGrid });
+
+  if (tanksToMelt.length > 0) {
+    const newTanks = new Map(newState.tanks);
+    for (const tid of tanksToMelt) {
+      const tank = newTanks.get(tid)!;
+      newTanks.set(tid, withContentType(tank, 'water', tank.drops));
+    }
+    newState = newState.withPatch({ tanks: newTanks });
+  }
+
+  return newState;
 }
 
 function checkWin(state: GameState): GameState {
