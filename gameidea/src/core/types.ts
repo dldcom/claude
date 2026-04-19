@@ -67,6 +67,15 @@ export interface PlayerState {
   facing: Direction;
 }
 
+export interface TankState {
+  readonly id: string;
+  readonly position: Position;
+  readonly contentType: 'empty' | 'water' | 'ice';
+  readonly drops: number;
+  readonly threshold: number;
+  readonly thresholdPattern?: readonly number[];
+}
+
 export const DIRECTION_DELTA: Record<Direction, { dx: number; dy: number }> = {
   up: { dx: 0, dy: -1 },
   down: { dx: 0, dy: 1 },
