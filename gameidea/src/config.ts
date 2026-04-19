@@ -36,4 +36,5 @@ export const LEVEL_PLAYLIST = [
   'ch2-04',
   'ch2-05',
   'ch2-06',
+  'ch2-08',
 ];

@@ -1,0 +1,27 @@
+id: "ch2-08"
+name: "탑 꼭대기"
+grid: |
+  ############
+  #.T........#
+  #SP.G.T.G.E#
+  #.T..S.....#
+  ############
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 1]
+    threshold: 12
+  - id: "t2"
+    position: [6, 2]
+    threshold: 12
+  - id: "t3"
+    position: [2, 3]
+    threshold: 12
+    thresholdPattern: [10, 12, 10, 12]
+gates:
+  - id: "g1"
+    position: [4, 2]
+    linkedTankIds: ["t1", "t3"]
+  - id: "g2"
+    position: [8, 2]
+    linkedTankIds: ["t2"]
