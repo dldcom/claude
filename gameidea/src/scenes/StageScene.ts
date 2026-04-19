@@ -10,6 +10,7 @@ import { DIRECTION_DELTA } from '../core/types';
 import { TileRenderer } from '../entities/TileRenderer';
 import { PlayerRenderer } from '../entities/PlayerRenderer';
 import { TankRenderer } from '../entities/TankRenderer';
+import { GateRenderer } from '../entities/GateRenderer';
 import { HUD, type PlayMode } from '../ui/HUD';
 import { showStageClearModal, showEndingScreen } from '../ui/StageClearModal';
 
@@ -23,6 +24,7 @@ export class StageScene extends Phaser.Scene {
   private levelIndex!: number;
   private tileRenderer!: TileRenderer;
   private tankRenderer!: TankRenderer;
+  private gateRenderer!: GateRenderer;
   private playerRenderer!: PlayerRenderer;
   private hud!: HUD;
   private undoStack = new UndoStack();
@@ -55,6 +57,7 @@ export class StageScene extends Phaser.Scene {
 
     this.tileRenderer = new TileRenderer(this, this.originX, this.originY);
     this.tankRenderer = new TankRenderer(this, this.originX, this.originY);
+    this.gateRenderer = new GateRenderer(this, this.originX, this.originY);
     this.playerRenderer = new PlayerRenderer(this, this.originX, this.originY);
     this.rerender();
 
@@ -72,6 +75,7 @@ export class StageScene extends Phaser.Scene {
   private rerender(): void {
     this.tileRenderer.render(this.state);
     this.tankRenderer.render(this.state);
+    this.gateRenderer.render(this.state);
     this.playerRenderer.render(this.state);
   }
 

@@ -59,6 +59,7 @@ export class TileRenderer {
   private drawObject(state: GameState, x: number, y: number): void {
     const o = state.grid.getObject(x, y);
     if (o === null) return;
+    if (o.type === 'gate') return; // GateRenderer가 담당
     const px = x * TILE_SIZE + TILE_SIZE / 2;
     const py = y * TILE_SIZE + TILE_SIZE / 2;
     let color: number;
