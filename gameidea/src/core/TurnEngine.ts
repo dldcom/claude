@@ -284,7 +284,53 @@ function tryPourTank(state: GameState, target: Position): GameState {
   });
 }
 
-// Stubs for future tasks (so switch is exhaustive)
-function tryFreezeTank(state: GameState, _target: Position): GameState { return state; }
-function tryMeltTank(state: GameState, _target: Position): GameState { return state; }
-function tryDrainTank(state: GameState, _target: Position): GameState { return state; }
+function tryFreezeTank(state: GameState, target: Position): GameState {
+  if (!isAdjacent(state.player.position, target)) return state;
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  if (state.grid.getGround(target.x, target.y).type !== 'tank') return state;
+  const tankId = findTankIdAt(state, target);
+  if (tankId === null) return state;
+  const tank = state.tanks.get(tankId)!;
+  if (tank.contentType !== 'water') return state;
+
+  const newTanks = new Map(state.tanks);
+  newTanks.set(tankId, withContentType(tank, 'ice', tank.drops));
+  return state.withPatch({
+    tanks: newTanks,
+    turnCount: state.turnCount + 1,
+  });
+}
+
+function tryMeltTank(state: GameState, target: Position): GameState {
+  if (!isAdjacent(state.player.position, target)) return state;
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  if (state.grid.getGround(target.x, target.y).type !== 'tank') return state;
+  const tankId = findTankIdAt(state, target);
+  if (tankId === null) return state;
+  const tank = state.tanks.get(tankId)!;
+  if (tank.contentType !== 'ice') return state;
+
+  const newTanks = new Map(state.tanks);
+  newTanks.set(tankId, withContentType(tank, 'water', tank.drops));
+  return state.withPatch({
+    tanks: newTanks,
+    turnCount: state.turnCount + 1,
+  });
+}
+
+function tryDrainTank(state: GameState, target: Position): GameState {
+  if (!isAdjacent(state.player.position, target)) return state;
+  if (!state.grid.inBounds(target.x, target.y)) return state;
+  if (state.grid.getGround(target.x, target.y).type !== 'tank') return state;
+  const tankId = findTankIdAt(state, target);
+  if (tankId === null) return state;
+  const tank = state.tanks.get(tankId)!;
+  if (tank.contentType !== 'water') return state;
+
+  const newTanks = new Map(state.tanks);
+  newTanks.set(tankId, withContentType(tank, 'empty', 0));
+  return state.withPatch({
+    tanks: newTanks,
+    turnCount: state.turnCount + 1,
+  });
+}

@@ -604,3 +604,111 @@ describe('TurnEngine.pourTank', () => {
     expect(s2.turnCount).toBe(0);
   });
 });
+
+describe('TurnEngine.freezeTank', () => {
+  it('freezes water in tank to ice (drops unchanged)', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'water' as const, drops: 1, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'freezeTank', target: { x: 2, y: 1 } });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('ice');
+    expect(t.drops).toBe(1);
+  });
+
+  it('fails when tank is empty', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'empty' as const, drops: 0, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'freezeTank', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+});
+
+describe('TurnEngine.meltTank', () => {
+  it('melts ice to water, drops preserved', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'ice' as const, drops: 2, threshold: 20 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'meltTank', target: { x: 2, y: 1 } });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('water');
+    expect(t.drops).toBe(2);
+  });
+
+  it('fails when tank is not ice', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'water' as const, drops: 1, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'meltTank', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+});
+
+describe('TurnEngine.drainTank', () => {
+  it('drains water tank to empty', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'water' as const, drops: 2, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'drainTank', target: { x: 2, y: 1 } });
+    const t = s2.tanks.get('t1')!;
+    expect(t.contentType).toBe('empty');
+    expect(t.drops).toBe(0);
+  });
+
+  it('fails when tank is not water', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([[
+        't1',
+        { id: 't1', position: { x: 2, y: 1 }, contentType: 'ice' as const, drops: 1, threshold: 12 },
+      ]]),
+    });
+    const s2 = executeAction(s1, { kind: 'drainTank', target: { x: 2, y: 1 } });
+    expect(s2.turnCount).toBe(0);
+  });
+});
