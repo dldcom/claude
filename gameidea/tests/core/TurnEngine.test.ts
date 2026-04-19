@@ -460,3 +460,82 @@ describe('TurnEngine.move — tank rejection', () => {
     expect(s2.turnCount).toBe(0);
   });
 });
+
+describe('TurnEngine.move — gates', () => {
+  it('cannot pass through closed gate (sensor inactive)', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, {
+      type: 'gate',
+      id: 'g1',
+      linkedTankIds: ['t1'],
+    });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([
+        ['t1', {
+          id: 't1',
+          position: { x: 4, y: 1 },
+          contentType: 'water',
+          drops: 1,
+          threshold: 12,
+        }],
+      ]),
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 1, y: 1 });
+    expect(s2.turnCount).toBe(0);
+  });
+
+  it('can pass through open gate (sensor active)', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, {
+      type: 'gate',
+      id: 'g1',
+      linkedTankIds: ['t1'],
+    });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([
+        ['t1', {
+          id: 't1',
+          position: { x: 4, y: 1 },
+          contentType: 'ice',
+          drops: 1,
+          threshold: 12,
+        }],
+      ]),
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 2, y: 1 });
+  });
+
+  it('AND logic: all linked tanks must be active', () => {
+    const grid = Grid.createEmpty(5, 3);
+    grid.setObject(2, 1, {
+      type: 'gate',
+      id: 'g1',
+      linkedTankIds: ['t1', 't2'],
+    });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+      tanks: new Map([
+        ['t1', {
+          id: 't1', position: { x: 4, y: 1 },
+          contentType: 'ice', drops: 1, threshold: 12,
+        }],
+        ['t2', {
+          id: 't2', position: { x: 4, y: 2 },
+          contentType: 'water', drops: 1, threshold: 12,
+        }],
+      ]),
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 1, y: 1 });
+  });
+});

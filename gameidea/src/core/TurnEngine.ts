@@ -1,7 +1,7 @@
 import { GameState } from './GameState';
 import type { ActionKind, Direction, Position } from './types';
 import { DIRECTION_DELTA } from './types';
-import { Grid } from './Grid';
+import { computeVolume, computeThreshold } from './TankRules';
 
 export function executeAction(state: GameState, action: ActionKind): GameState {
   let next: GameState;
@@ -34,7 +34,7 @@ function tryMove(state: GameState, direction: Direction): GameState {
   let moved = false;
   while (true) {
     const next = addDelta(cur, direction);
-    if (!canEnter(state.grid, next)) break;
+    if (!canEnter(state, next)) break;
     cur = next;
     moved = true;
     const obj = state.grid.getObject(cur.x, cur.y);
@@ -82,9 +82,20 @@ function isAdjacent(a: Position, b: Position): boolean {
   return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
 }
 
-function canEnter(grid: Grid, pos: Position): boolean {
-  if (!grid.inBounds(pos.x, pos.y)) return false;
-  const ground = grid.getGround(pos.x, pos.y);
+function isGateOpen(
+  gate: { readonly linkedTankIds: readonly string[] },
+  state: GameState,
+): boolean {
+  return gate.linkedTankIds.every(tankId => {
+    const tank = state.tanks.get(tankId);
+    if (!tank) return false;
+    return computeVolume(tank) >= computeThreshold(tank, state.turnCount);
+  });
+}
+
+function canEnter(state: GameState, pos: Position): boolean {
+  if (!state.grid.inBounds(pos.x, pos.y)) return false;
+  const ground = state.grid.getGround(pos.x, pos.y);
   if (
     ground.type === 'wall' ||
     ground.type === 'spring' ||
@@ -93,9 +104,11 @@ function canEnter(grid: Grid, pos: Position): boolean {
   ) {
     return false;
   }
-  const obj = grid.getObject(pos.x, pos.y);
+  const obj = state.grid.getObject(pos.x, pos.y);
   if (obj === null) return true;
-  return obj.type === 'ice' || obj.type === 'flower';
+  if (obj.type === 'ice' || obj.type === 'flower') return true;
+  if (obj.type === 'gate') return isGateOpen(obj, state);
+  return false;
 }
 
 function addDelta(p: Position, dir: Direction): Position {
