@@ -11,7 +11,8 @@ export type GroundType =
   | 'wall'
   | 'spring'
   | 'bonfire'
-  | 'exit';
+  | 'exit'
+  | 'tank';
 
 export interface GroundCell {
   type: GroundType;

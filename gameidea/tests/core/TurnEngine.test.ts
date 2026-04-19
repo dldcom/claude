@@ -445,3 +445,18 @@ describe('TurnEngine — win condition', () => {
     expect(s2.isWon).toBe(false);
   });
 });
+
+describe('TurnEngine.move — tank rejection', () => {
+  it('cannot move onto tank ground', () => {
+    const grid = Grid.createEmpty(4, 3);
+    grid.setGround(2, 1, { type: 'tank' });
+    const s1 = GameState.create({
+      grid,
+      player: { position: { x: 1, y: 1 }, facing: 'right' },
+      flowersRequired: 0,
+    });
+    const s2 = executeAction(s1, { kind: 'move', direction: 'right' });
+    expect(s2.player.position).toEqual({ x: 1, y: 1 });
+    expect(s2.turnCount).toBe(0);
+  });
+});

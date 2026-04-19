@@ -85,7 +85,12 @@ function isAdjacent(a: Position, b: Position): boolean {
 function canEnter(grid: Grid, pos: Position): boolean {
   if (!grid.inBounds(pos.x, pos.y)) return false;
   const ground = grid.getGround(pos.x, pos.y);
-  if (ground.type === 'wall' || ground.type === 'spring' || ground.type === 'bonfire') {
+  if (
+    ground.type === 'wall' ||
+    ground.type === 'spring' ||
+    ground.type === 'bonfire' ||
+    ground.type === 'tank'
+  ) {
     return false;
   }
   const obj = grid.getObject(pos.x, pos.y);

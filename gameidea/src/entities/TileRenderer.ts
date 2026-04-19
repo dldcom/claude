@@ -31,6 +31,7 @@ export class TileRenderer {
       case 'spring': color = COLORS.spring; break;
       case 'bonfire': color = COLORS.bonfire; break;
       case 'exit': color = COLORS.exit; break;
+      case 'tank': color = 0x7a99c2; break;  // 임시 placeholder, 실제 렌더는 Task 10 TankRenderer
       default: color = COLORS.floor; break;
     }
     const rect = this.scene.add.rectangle(
