@@ -1,0 +1,22 @@
+id: "ch2-03"
+name: "두 수조의 문"
+grid: |
+  #########
+  #.......#
+  #.T.....#
+  #SP.G..E#
+  #.T.....#
+  #.......#
+  #########
+required_flowers: 0
+tanks:
+  - id: "t1"
+    position: [2, 2]
+    threshold: 12
+  - id: "t2"
+    position: [2, 4]
+    threshold: 12
+gates:
+  - id: "g1"
+    position: [4, 3]
+    linkedTankIds: ["t1", "t2"]
