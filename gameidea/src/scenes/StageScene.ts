@@ -5,7 +5,7 @@ import { loadLevelFromYaml } from '../core/LevelLoader';
 import { GameState } from '../core/GameState';
 import { executeAction } from '../core/TurnEngine';
 import { UndoStack } from '../core/UndoStack';
-import type { ActionKind, Direction, Position } from '../core/types';
+import type { ActionKind, Direction, Position, TankState } from '../core/types';
 import { DIRECTION_DELTA } from '../core/types';
 import { TileRenderer } from '../entities/TileRenderer';
 import { PlayerRenderer } from '../entities/PlayerRenderer';
@@ -108,6 +108,35 @@ export class StageScene extends Phaser.Scene {
     const obj = this.state.grid.getObject(cell.x, cell.y);
     const ground = this.state.grid.getGround(cell.x, cell.y);
 
+    // 수조 탭 처리
+    if (ground.type === 'tank') {
+      const tank = findTankAtCell(this.state, cell);
+      if (!tank) return;
+      if (this.mode === 'play') {
+        if (tank.contentType === 'empty' && this.playerIsNearSpring()) {
+          this.applyAction({ kind: 'pourTank', target: cell });
+          return;
+        }
+        if (tank.contentType === 'water') {
+          this.applyAction({ kind: 'freezeTank', target: cell });
+          return;
+        }
+        return;
+      }
+      if (this.mode === 'melt') {
+        if (tank.contentType === 'ice') {
+          this.applyAction({ kind: 'meltTank', target: cell });
+          return;
+        }
+        if (tank.contentType === 'water') {
+          this.applyAction({ kind: 'drainTank', target: cell });
+          return;
+        }
+        return;
+      }
+    }
+
+    // 기존 로직 (water/ice/spring/move) 그대로 유지
     if (this.mode === 'play') {
       if (obj !== null && obj.type === 'water') {
         this.promptFreezeDirection(cell);
@@ -130,6 +159,18 @@ export class StageScene extends Phaser.Scene {
     const direction: Direction =
       dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
     this.applyAction({ kind: 'move', direction });
+  }
+
+  private playerIsNearSpring(): boolean {
+    const p = this.state.player.position;
+    for (const dir of ['up', 'down', 'left', 'right'] as Direction[]) {
+      const d = DIRECTION_DELTA[dir];
+      const nx = p.x + d.dx;
+      const ny = p.y + d.dy;
+      if (!this.state.grid.inBounds(nx, ny)) continue;
+      if (this.state.grid.getGround(nx, ny).type === 'spring') return true;
+    }
+    return false;
   }
 
   private promptPourDirection(): void {
@@ -250,4 +291,11 @@ export class StageScene extends Phaser.Scene {
     for (const a of this.freezeArrows) a.destroy();
     this.freezeArrows.length = 0;
   }
+}
+
+function findTankAtCell(state: GameState, cell: Position): TankState | null {
+  for (const tank of state.tanks.values()) {
+    if (tank.position.x === cell.x && tank.position.y === cell.y) return tank;
+  }
+  return null;
 }
